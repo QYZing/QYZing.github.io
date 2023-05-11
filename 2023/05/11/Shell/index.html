@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/earth.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/earth.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"dying.space","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Shell由于shell符号实在太多了，初学shell记录一下常用符号 特殊变量12345$n 命令参数第n个$# 命令参数数量$* 命令参数为整体形式$@ 命令行参数为数组形式$？获取上一行语句返回值（码（只是整数值））   对于条件判断来说0(true) or 1(false)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Shell">
+<meta property="og:url" content="http://dying.space/2023/05/11/Shell/index.html">
+<meta property="og:site_name" content="dying Blog">
+<meta property="og:description" content="Shell由于shell符号实在太多了，初学shell记录一下常用符号 特殊变量12345$n 命令参数第n个$# 命令参数数量$* 命令参数为整体形式$@ 命令行参数为数组形式$？获取上一行语句返回值（码（只是整数值））   对于条件判断来说0(true) or 1(false)">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-05-11T10:22:00.000Z">
+<meta property="article:modified_time" content="2023-05-11T10:23:41.501Z">
+<meta property="article:author" content="dying">
+<meta property="article:tag" content="Shell">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://dying.space/2023/05/11/Shell/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Shell | dying Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">dying Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>资源</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-guestbook">
+
+    <a href="/guestbook/" rel="section"><i class="fa fa-book fa-fw"></i>留言</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://dying.space/2023/05/11/Shell/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/head.jpg">
+      <meta itemprop="name" content="dying">
+      <meta itemprop="description" content="想都是问题，做才是答案">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dying Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Shell
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-05-11 18:22:00 / 修改时间：18:23:41" itemprop="dateCreated datePublished" datetime="2023-05-11T18:22:00+08:00">2023-05-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2023/05/11/Shell/" class="post-meta-item leancloud_visitors" data-flag-title="Shell" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2023/05/11/Shell/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2023/05/11/Shell/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Shell"><a href="#Shell" class="headerlink" title="Shell"></a>Shell</h1><p>由于shell符号实在太多了，初学shell记录一下常用符号</p>
+<h3 id="特殊变量"><a href="#特殊变量" class="headerlink" title="特殊变量"></a>特殊变量</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$</span><span class="language-bash">n 命令参数第n个</span></span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash"><span class="comment"># 命令参数数量</span></span></span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">* 命令参数为整体形式</span></span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">@ 命令行参数为数组形式</span></span><br><span class="line"><span class="meta prompt_">$</span><span class="language-bash">？获取上一行语句返回值（码（只是整数值））   对于条件判断来说0(<span class="literal">true</span>) or 1(<span class="literal">false</span>)</span>  </span><br></pre></td></tr></table></figure>
+
+<span id="more"></span>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">1 #!/bin/bash</span><br><span class="line"> 2 echo &#x27;------------------$n-------------------&#x27;</span><br><span class="line"> 3 echo script name : $0 #脚本名</span><br><span class="line"> 4 echo 1st name : $1</span><br><span class="line"> 5 echo 2st name : $2 #第二个参数</span><br><span class="line"> 6 echo &#x27;------------------$#-------------------&#x27;</span><br><span class="line"> 7 echo $#</span><br><span class="line"> 8 #命令行参数数量</span><br><span class="line"> 9 echo &#x27;------------------$*-------------------&#x27;</span><br><span class="line">10 echo $*</span><br><span class="line">11 #命令行参数为字符串形式（单一整体）</span><br><span class="line">12 echo &#x27;------------------$@-------------------&#x27;</span><br><span class="line">13 echo $@</span><br><span class="line">14 #命令行参数 为数组形式</span><br><span class="line">15 echo &#x27;------------------$?-------------------&#x27;</span><br><span class="line">16 echo $?</span><br><span class="line">17 #$? 用于判断上一句执行脚本是否成功</span><br><span class="line">18 [ 1 = 2 ] # 数值相等过着不等可用 = != 而其他需要用别的                                 </span><br><span class="line">19 echo $?</span><br></pre></td></tr></table></figure>
+
+<h3 id="条件判断"><a href="#条件判断" class="headerlink" title="条件判断"></a>条件判断</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[ expr ] </span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">判断值是否相等</span></span><br><span class="line">[ expr ] 注意前后空格 然后可使用 $?判断表达式为真或假（字符串可用 = != 判断是否相等）</span><br><span class="line">-eq （equal 相等）		     -ne(not equal 不相等) </span><br><span class="line">-lt(less then 小于) 	      -gt(greater then 大于)</span><br><span class="line">-le(less equal 小于等于)	 -ge(greater equal 大于等于)</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">判断文件权限 可以判断一个文件是否有某种权限 [ -r 文件名 ]</span></span><br><span class="line">-r 可读</span><br><span class="line">-x 可执行</span><br><span class="line">-w 可写</span><br><span class="line">[ -x add.sh ]</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">判断文件类型 [ -d|e|f 文件名 ]</span></span><br><span class="line">-d 是否是目录</span><br><span class="line">-e 是否存在</span><br><span class="line">-f 是否是文件</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">可以使用 &amp;&amp; ||         [ <span class="built_in">expr</span> ] &amp;&amp; [ <span class="built_in">expr</span> ] || [ <span class="built_in">expr</span> ]</span> </span><br><span class="line">[ -f test1.sh  ] &amp;&amp; echo ok || echo not ok</span><br></pre></td></tr></table></figure>
+
+<h3 id="流程控制"><a href="#流程控制" class="headerlink" title="流程控制"></a>流程控制</h3><h4 id="if"><a href="#if" class="headerlink" title="if"></a>if</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">单分支</span></span><br><span class="line">if [ expr ] ; then </span><br><span class="line"><span class="meta prompt_">	#</span><span class="language-bash">代码块</span></span><br><span class="line">fi #结束标示</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">其中 ； 可以不加，不加把 语句后换行即可 相当于 ； 就是换行符</span></span><br><span class="line">if [ expr ]</span><br><span class="line">then #代码 </span><br><span class="line">fi</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">多分支 <span class="built_in">test</span></span></span><br><span class="line"> echo &#x27;------------------代码-------------------&#x27;</span><br><span class="line"> if [ $# -eq 1 ] &amp;&amp; [  $1 -le 18 ]</span><br><span class="line">   then</span><br><span class="line">     echo 年龄小于于等于18</span><br><span class="line"> elif [ $# -eq 1 ] &amp;&amp; [ $1 -le 20 ]</span><br><span class="line">   then</span><br><span class="line">     echo 年龄在18 到20 之间</span><br><span class="line"> elif [ $# -eq 1 ]                                                               </span><br><span class="line"> 	then</span><br><span class="line">    echo 年龄大于20    </span><br><span class="line"> else</span><br><span class="line"> 	echo 错误参数</span><br><span class="line"> fi</span><br></pre></td></tr></table></figure>
+
+<h4 id="case"><a href="#case" class="headerlink" title="case"></a>case</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;------------------代码-------------------&#x27;</span><br><span class="line">case $变量名 in</span><br><span class="line">&quot;值1&quot;)</span><br><span class="line">	如果变量为值1执行</span><br><span class="line">;;#该语句结束</span><br><span class="line">&quot;值2&quot;)</span><br><span class="line">	代码</span><br><span class="line">;;</span><br><span class="line">* )</span><br><span class="line">	上面代码都不执行就执行这个</span><br><span class="line">;;</span><br><span class="line">esac</span><br></pre></td></tr></table></figure>
+
+<h4 id="循环"><a href="#循环" class="headerlink" title="循环"></a>循环</h4><h6 id="for"><a href="#for" class="headerlink" title="for"></a>for</h6><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">--------------------<span class="built_in">sum</span> 100------------------类似于其他语言</span></span><br><span class="line"><span class="meta prompt_"> #</span><span class="language-bash">!/bin/bash</span>  </span><br><span class="line"><span class="meta prompt_"> #</span><span class="language-bash">-----------<span class="built_in">test</span>----------</span></span><br><span class="line">sum=0 #可有可无，只是为了直观    </span><br><span class="line">for (( i=1 ; i &lt;= $1 ;i++ ))    </span><br><span class="line">do    </span><br><span class="line">  sum=$[ $sum + $i ]    </span><br><span class="line">done    </span><br><span class="line">echo $sum    </span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">还有一种写法和python很像</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">-----------<span class="built_in">test</span>----------</span></span><br><span class="line">for os in linux maxos windows </span><br><span class="line">do echo $os </span><br><span class="line">done</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">1 到 100 相加 【；】可换成【回车】&#123;中间必须是俩个..&#125;</span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">-----------<span class="built_in">test</span>----------</span></span><br><span class="line">for i in &#123;1..100&#125; ; do sum=$[$sum + $i] ; done ; echo $sum;</span><br></pre></td></tr></table></figure>
+
+<h6 id="while"><a href="#while" class="headerlink" title="while"></a>while</h6><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">while [ expr ]</span><br><span class="line">do</span><br><span class="line"><span class="meta prompt_">	#</span><span class="language-bash">code</span></span><br><span class="line">done</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">-----------<span class="built_in">test</span>----------</span></span><br><span class="line">a=1    </span><br><span class="line">sum2=0   </span><br><span class="line">while [ $a -le $1 ]    </span><br><span class="line">do    </span><br><span class="line">  sum2=$[ $sum2 + $a ]    </span><br><span class="line">  a=$[$a + 1]    </span><br><span class="line">done     </span><br><span class="line">echo $sum2    </span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">上面写法有点反人类</span></span><br><span class="line">echo &#x27;--------------let----------------&#x27;  </span><br><span class="line">a=1</span><br><span class="line">sum3=0    </span><br><span class="line">while [ $a -le $1 ]</span><br><span class="line">do</span><br><span class="line">  let sum3+=a  #加个let 还好不过+=不能有空格</span><br><span class="line">  let a++    </span><br><span class="line">done    </span><br><span class="line">echo $sum3    </span><br></pre></td></tr></table></figure>
+
+<h3 id="read读取控制台输入"><a href="#read读取控制台输入" class="headerlink" title="read读取控制台输入"></a>read读取控制台输入</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">read -t (等待时间 秒) -p（提示信息） 接收输入的变量名</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">-----------<span class="built_in">test</span>----------</span></span><br><span class="line">read -t 10 -p &quot;请输入name &quot; dying    </span><br><span class="line">echo  你好$dying   </span><br></pre></td></tr></table></figure>
+
+<h3 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">脚本没有返回值 不太灵活（其实差不多）</span><br><span class="line">脚本调用函数直接用 $( pwd ) 这样可以得到pwd返回值</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">函数定义</span><br><span class="line">[function] name()</span><br><span class="line">&#123;</span><br><span class="line">	[return int;]#返回的状态码</span><br><span class="line"><span class="meta prompt_">	#</span><span class="language-bash">需要返回直接搭配 <span class="built_in">echo</span> 使用</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">-----------<span class="built_in">test</span>----------</span></span><br><span class="line">function add()    </span><br><span class="line">&#123;    </span><br><span class="line">  sum=$[$1 + $2]    </span><br><span class="line">  echo &quot;和 ：&quot; $sum      </span><br><span class="line">&#125;    </span><br><span class="line">    </span><br><span class="line">read -p &quot;请输入第一个整数&quot; a    </span><br><span class="line">read -p &quot;请输入第二个整数&quot; b    </span><br><span class="line">    </span><br><span class="line">add $a $b      </span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+      
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Shell/" rel="tag"># Shell</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/05/10/share_ptrT/" rel="prev" title="share_ptr<T>">
+      <i class="fa fa-chevron-left"></i> share_ptr<T>
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Shell"><span class="nav-number">1.</span> <span class="nav-text">Shell</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%B9%E6%AE%8A%E5%8F%98%E9%87%8F"><span class="nav-number">1.0.1.</span> <span class="nav-text">特殊变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD"><span class="nav-number">1.0.2.</span> <span class="nav-text">条件判断</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6"><span class="nav-number">1.0.3.</span> <span class="nav-text">流程控制</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#if"><span class="nav-number">1.0.3.1.</span> <span class="nav-text">if</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#case"><span class="nav-number">1.0.3.2.</span> <span class="nav-text">case</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF"><span class="nav-number">1.0.3.3.</span> <span class="nav-text">循环</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#for"><span class="nav-number">1.0.3.3.0.1.</span> <span class="nav-text">for</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#while"><span class="nav-number">1.0.3.3.0.2.</span> <span class="nav-text">while</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#read%E8%AF%BB%E5%8F%96%E6%8E%A7%E5%88%B6%E5%8F%B0%E8%BE%93%E5%85%A5"><span class="nav-number">1.0.4.</span> <span class="nav-text">read读取控制台输入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0"><span class="nav-number">1.0.5.</span> <span class="nav-text">函数</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="dying"
+      src="/images/head.jpg">
+  <p class="site-author-name" itemprop="name">dying</p>
+  <div class="site-description" itemprop="description">想都是问题，做才是答案</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/QYZing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;QYZing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:2062656460@qq.com" title="E-Mail → mailto:2062656460@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dying</span>
+</div>
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/canvas_sphere.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'wFD2TJDXerlwQLJQOksbriCK-gzGzoHsz',
+      appKey     : 'ErOISFE8uucXKBtDq5EVrhh4',
+      placeholder: "输入你的评论",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '3' || 10,
+      visitor    : true,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : true,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
