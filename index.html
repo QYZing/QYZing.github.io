@@ -172,6 +172,113 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://dying.space/2023/05/13/MySQL%EF%BC%88%E4%BA%8B%E5%8A%A1%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/head.jpg">
+      <meta itemprop="name" content="dying">
+      <meta itemprop="description" content="想都是问题，做才是答案">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dying Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/05/13/MySQL%EF%BC%88%E4%BA%8B%E5%8A%A1%EF%BC%89/" class="post-title-link" itemprop="url">未命名</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-05-13 11:11:49 / 修改时间：11:14:01" itemprop="dateCreated datePublished" datetime="2023-05-13T11:11:49+08:00">2023-05-13</time>
+            </span>
+
+          
+            <span id="/2023/05/13/MySQL%EF%BC%88%E4%BA%8B%E5%8A%A1%EF%BC%89/" class="post-meta-item leancloud_visitors" data-flag-title="" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2023/05/13/MySQL%EF%BC%88%E4%BA%8B%E5%8A%A1%EF%BC%89/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2023/05/13/MySQL%EF%BC%88%E4%BA%8B%E5%8A%A1%EF%BC%89/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>title: MySQL<br>date: 2023-05-13 10:00<br>categories: 数据库<br>tags: MySQL</p>
+<h1 id="MySQL（事务）"><a href="#MySQL（事务）" class="headerlink" title="MySQL（事务）"></a>MySQL（事务）</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">事务就是一段必须由（原子性执行的语句）</span><br><span class="line">要么同时执行，要么同时不执行（在并发程序时保持数据的同步状态）</span><br></pre></td></tr></table></figure>
+
+<h2 id="事务基本操作"><a href="#事务基本操作" class="headerlink" title="事务基本操作"></a>事务基本操作</h2><h4 id="关闭自动提交"><a href="#关闭自动提交" class="headerlink" title="关闭自动提交"></a>关闭自动提交</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1 </span><br><span class="line">	set @@autocommit = 0  # 0 为关闭事务自动提交</span><br><span class="line">	select @@autocommit #可查看值</span><br><span class="line">2</span><br><span class="line">	start transaction or  begin #一次性的</span><br></pre></td></tr></table></figure>
+
+<h4 id="开启自动提交"><a href="#开启自动提交" class="headerlink" title="开启自动提交"></a>开启自动提交</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set @@autocommit = 1 # 1 事务自动提交 如果是start transaction 开启的这个关不了</span><br></pre></td></tr></table></figure>
+
+<h6 id="注意："><a href="#注意：" class="headerlink" title="注意："></a>注意：</h6><p>使用 BEGIN 或 START TRANSACTION 开启一个事务之后，自动提交将保持禁用状态，直到使用 COMMIT 或 ROLLBACK 结束事务。之后，自动提交模式会恢复到之前的状态，即如果 BEGIN 前 autocommit = 1，则完成本次事务后 autocommit 还是 1。如果 BEGIN 前 autocommit = 0，则完成本次事务后 autocommit 还是 0。</p>
+<p>使用set关闭自动提交可多次commit而使用transaction/begin开启的执行完commit或者rollback将结束本次事务恢复到使用autocommit来开/关</p>
+<h4 id="提交-or-回滚"><a href="#提交-or-回滚" class="headerlink" title="提交 or 回滚"></a>提交 or 回滚</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#当关闭自动提交时执行完sql语句还只是修改了暂存区的值没有修改物理存储里的值</span><br><span class="line">commit #执行后将会更改物理存储的值</span><br><span class="line">rollback #语句出现异常可将暂存区的值回滚到执行前 并 结束当前事务</span><br><span class="line">#如果不提交事务，而终止 MySQL 会话，数据库将会自动执行回滚操作。</span><br></pre></td></tr></table></figure>
+
+<h2 id="事务四大特性"><a href="#事务四大特性" class="headerlink" title="事务四大特性"></a>事务四大特性</h2><h4 id="原子性（Atomicity）"><a href="#原子性（Atomicity）" class="headerlink" title="原子性（Atomicity）"></a>原子性（Atomicity）</h4><p>事务是不可分割的最小操作单元，要么成功，要么失败（全部）</p>
+<h4 id="一致性-Consistency"><a href="#一致性-Consistency" class="headerlink" title="一致性(Consistency)"></a>一致性(Consistency)</h4><p>事务完成时，必须使所有数据保持一致状态</p>
+<h4 id="隔离性-isolation"><a href="#隔离性-isolation" class="headerlink" title="隔离性(isolation)"></a>隔离性(isolation)</h4><p>数据库系统提供的隔离机制，保证事务在不受外部并发操作影响的独立环境下运行</p>
+<h4 id="持久性-Durability"><a href="#持久性-Durability" class="headerlink" title="持久性(Durability)"></a>持久性(Durability)</h4><p>事务一旦提交或者回滚，他对数据库中的数据改变就是永久的</p>
+<h2 id="并发事务问题"><a href="#并发事务问题" class="headerlink" title="并发事务问题"></a>并发事务问题</h2><h3 id="脏读"><a href="#脏读" class="headerlink" title="脏读"></a>脏读</h3><p>一个事务读取到另一个事务还没有提交的数据</p>
+<h3 id="不可重复读"><a href="#不可重复读" class="headerlink" title="不可重复读"></a>不可重复读</h3><p>一个事务先后读取同一条记录，但两次读取的结果不一样</p>
+<h3 id="幻读"><a href="#幻读" class="headerlink" title="幻读"></a>幻读</h3><p>一个事务按照条件查询数据时，没有对应数据，但在插入时数据已经存在</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">select @@tx_isolation; #查询当前事务级别</span><br><span class="line">set session transaction isolation level read uncommitted ; #设置事务级别</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">					脏读					不可重复读				幻读</span><br><span class="line">READ UNCOMMITTED	可以					  可以				  可以</span><br><span class="line">READ COMMITTED	    不可以					 可以 			     可以</span><br><span class="line">REPEATABLE READ 	不可以					 不可以				 可以</span><br><span class="line">SERIALIZABLE 		不可以					 不可以				 不可以</span><br><span class="line">其中SERIALIZABLE  执行插入时会阻塞等待其他事务操作本数据</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://dying.space/2023/05/12/cs144lab/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -195,17 +302,23 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2023-05-12 23:22:00 / 修改时间：23:00:36" itemprop="dateCreated datePublished" datetime="2023-05-12T23:22:00+08:00">2023-05-12</time>
+              <time title="创建时间：2023-05-12 23:22:00" itemprop="dateCreated datePublished" datetime="2023-05-12T23:22:00+08:00">2023-05-12</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-05-13 11:40:35" itemprop="dateModified" datetime="2023-05-13T11:40:35+08:00">2023-05-13</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/cslab/" itemprop="url" rel="index"><span itemprop="name">cslab</span></a>
+                  <a href="/categories/cs-lab/" itemprop="url" rel="index"><span itemprop="name">cs-lab</span></a>
                 </span>
             </span>
 
@@ -243,6 +356,7 @@
       
           <h1 id="【计算机网络】cs144-lab"><a href="#【计算机网络】cs144-lab" class="headerlink" title="【计算机网络】cs144 lab"></a>【计算机网络】cs144 lab</h1><p><strong>为了更好的贯彻手拿TCP脚踩UDP兜里装个ICMP的意愿，遂写一个小lab</strong></p>
 <p>由于再写时官网还没有更新完文档于是用了一个大佬搭的备份19年版本<a target="_blank" rel="noopener" href="https://www.cnblogs.com/kangyupl/p/stanford_cs144_labs.html">【计算机网络】Stanford CS144 Lab Assignments 学习笔记 - 康宇PL - 博客园 (cnblogs.com)</a></p>
+<p>我的gitee链接: <a target="_blank" rel="noopener" href="https://gitee.com/dying1122/cs144-lab#%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95%E4%B8%8Ebug">cs144 lab: cs144 lab 目前正在一个 一个打补丁往后写 (gitee.com)</a></p>
 <h6 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h6><p>本lab实验环境在centos g++ 8 实现 cmake版本12</p>
 <p>如果make 报错在tun.cc  可在里面添加头文件</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;tun.hh&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;util.hh&quot;</span></span></span><br><span class="line"><span class="comment">//下面这俩个</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br></pre></td></tr></table></figure>
@@ -725,7 +839,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-count">6</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
