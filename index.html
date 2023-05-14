@@ -203,7 +203,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-05-14 09:43:24" itemprop="dateModified" datetime="2023-05-14T09:43:24+08:00">2023-05-14</time>
+                <time title="修改时间：2023-05-14 09:45:56" itemprop="dateModified" datetime="2023-05-14T09:45:56+08:00">2023-05-14</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -250,31 +250,14 @@
           <h1 id="MySQL（事务）"><a href="#MySQL（事务）" class="headerlink" title="MySQL（事务）"></a>MySQL（事务）</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">事务就是一段必须由（原子性执行的语句）</span><br><span class="line">要么同时执行，要么同时不执行（在并发程序时保持数据的同步状态）</span><br></pre></td></tr></table></figure>
 
 <h2 id="事务基本操作"><a href="#事务基本操作" class="headerlink" title="事务基本操作"></a>事务基本操作</h2><h4 id="关闭自动提交"><a href="#关闭自动提交" class="headerlink" title="关闭自动提交"></a>关闭自动提交</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1 </span><br><span class="line">	set @@autocommit = 0  # 0 为关闭事务自动提交</span><br><span class="line">	select @@autocommit #可查看值</span><br><span class="line">2</span><br><span class="line">	start transaction or  begin #一次性的</span><br></pre></td></tr></table></figure>
-
-<h4 id="开启自动提交"><a href="#开启自动提交" class="headerlink" title="开启自动提交"></a>开启自动提交</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set @@autocommit = 1 # 1 事务自动提交 如果是start transaction 开启的这个关不了</span><br></pre></td></tr></table></figure>
-
-<h6 id="注意："><a href="#注意：" class="headerlink" title="注意："></a>注意：</h6><p>使用 BEGIN 或 START TRANSACTION 开启一个事务之后，自动提交将保持禁用状态，直到使用 COMMIT 或 ROLLBACK 结束事务。之后，自动提交模式会恢复到之前的状态，即如果 BEGIN 前 autocommit = 1，则完成本次事务后 autocommit 还是 1。如果 BEGIN 前 autocommit = 0，则完成本次事务后 autocommit 还是 0。</p>
-<p>使用set关闭自动提交可多次commit而使用transaction/begin开启的执行完commit或者rollback将结束本次事务恢复到使用autocommit来开/关</p>
-<h4 id="提交-or-回滚"><a href="#提交-or-回滚" class="headerlink" title="提交 or 回滚"></a>提交 or 回滚</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#当关闭自动提交时执行完sql语句还只是修改了暂存区的值没有修改物理存储里的值</span><br><span class="line">commit #执行后将会更改物理存储的值</span><br><span class="line">rollback #语句出现异常可将暂存区的值回滚到执行前 并 结束当前事务</span><br><span class="line">#如果不提交事务，而终止 MySQL 会话，数据库将会自动执行回滚操作。</span><br></pre></td></tr></table></figure>
-
-<h2 id="事务四大特性"><a href="#事务四大特性" class="headerlink" title="事务四大特性"></a>事务四大特性</h2><h4 id="原子性（Atomicity）"><a href="#原子性（Atomicity）" class="headerlink" title="原子性（Atomicity）"></a>原子性（Atomicity）</h4><p>事务是不可分割的最小操作单元，要么成功，要么失败（全部）</p>
-<h4 id="一致性-Consistency"><a href="#一致性-Consistency" class="headerlink" title="一致性(Consistency)"></a>一致性(Consistency)</h4><p>事务完成时，必须使所有数据保持一致状态</p>
-<h4 id="隔离性-isolation"><a href="#隔离性-isolation" class="headerlink" title="隔离性(isolation)"></a>隔离性(isolation)</h4><p>数据库系统提供的隔离机制，保证事务在不受外部并发操作影响的独立环境下运行</p>
-<h4 id="持久性-Durability"><a href="#持久性-Durability" class="headerlink" title="持久性(Durability)"></a>持久性(Durability)</h4><p>事务一旦提交或者回滚，他对数据库中的数据改变就是永久的</p>
-<h2 id="并发事务问题"><a href="#并发事务问题" class="headerlink" title="并发事务问题"></a>并发事务问题</h2><h3 id="脏读"><a href="#脏读" class="headerlink" title="脏读"></a>脏读</h3><p>一个事务读取到另一个事务还没有提交的数据</p>
-<h3 id="不可重复读"><a href="#不可重复读" class="headerlink" title="不可重复读"></a>不可重复读</h3><p>一个事务先后读取同一条记录，但两次读取的结果不一样</p>
-<h3 id="幻读"><a href="#幻读" class="headerlink" title="幻读"></a>幻读</h3><p>一个事务按照条件查询数据时，没有对应数据，但在插入时数据已经存在</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">select @@tx_isolation; #查询当前事务级别</span><br><span class="line">set session transaction isolation level read uncommitted ; #设置事务级别</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">					脏读					不可重复读				幻读</span><br><span class="line">READ UNCOMMITTED	可以					  可以				  可以</span><br><span class="line">READ COMMITTED	    不可以					 可以 			     可以</span><br><span class="line">REPEATABLE READ 	不可以					 不可以				 可以</span><br><span class="line">SERIALIZABLE 		不可以					 不可以				 不可以</span><br><span class="line">其中SERIALIZABLE  执行插入时会阻塞等待其他事务操作本数据</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-
-
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/05/13/MySQL%EF%BC%88%E4%BA%8B%E5%8A%A1%EF%BC%89/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
