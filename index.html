@@ -172,6 +172,111 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://dying.space/2023/05/15/cs144-lab/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/head.jpg">
+      <meta itemprop="name" content="dying">
+      <meta itemprop="description" content="想都是问题，做才是答案">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dying Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/05/15/cs144-lab/" class="post-title-link" itemprop="url">cs144 lab0 - lab4</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-05-15 23:22:00 / 修改时间：22:13:57" itemprop="dateCreated datePublished" datetime="2023-05-15T23:22:00+08:00">2023-05-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/cs-lab/" itemprop="url" rel="index"><span itemprop="name">cs-lab</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2023/05/15/cs144-lab/" class="post-meta-item leancloud_visitors" data-flag-title="cs144 lab0 - lab4" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2023/05/15/cs144-lab/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2023/05/15/cs144-lab/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="【计算机网络】cs144-lab"><a href="#【计算机网络】cs144-lab" class="headerlink" title="【计算机网络】cs144 lab"></a>【计算机网络】cs144 lab</h1><p><strong>为了更好的贯彻手拿TCP脚踩UDP兜里装个ICMP的意愿，遂写一个小lab</strong></p>
+<p>由于再写时官网还没有更新完文档于是用了一个大佬搭的备份19年版本<a target="_blank" rel="noopener" href="https://www.cnblogs.com/kangyupl/p/stanford_cs144_labs.html">【计算机网络】Stanford CS144 Lab Assignments 学习笔记 - 康宇PL - 博客园 (cnblogs.com)</a></p>
+<p>我的gitee链接:<a target="_blank" rel="noopener" href="https://gitee.com/dying1122/cs144-lab#%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95%E4%B8%8Ebug">cs144 lab: cs144 lab 目前正在一个 一个打补丁往后写 (gitee.com)</a></p>
+<p>我是在看完中科大的网络就直接写这个了，搭配【 计算机网络自顶向下 &amp;&amp; TCP/IP 详解 卷1】</p>
+<p>前言：</p>
+<p>本lab实验环境在centos g++ 8 实现 cmake版本12</p>
+<p>如果make 报错在tun.cc  可在里面添加头文件</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;tun.hh&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;util.hh&quot;</span></span></span><br><span class="line"><span class="comment">//下面这俩个</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br></pre></td></tr></table></figure>
+
+<p>需要调试可看lab4里的调试技巧</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/05/15/cs144-lab/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://dying.space/2023/05/13/MySQL%EF%BC%88%E4%BA%8B%E5%8A%A1%EF%BC%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -253,115 +358,6 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2023/05/13/MySQL%EF%BC%88%E4%BA%8B%E5%8A%A1%EF%BC%89/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://dying.space/2023/05/12/cs144lab/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/head.jpg">
-      <meta itemprop="name" content="dying">
-      <meta itemprop="description" content="想都是问题，做才是答案">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="dying Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/05/12/cs144lab/" class="post-title-link" itemprop="url">cs144 lab0 - lab4</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2023-05-12 23:22:00" itemprop="dateCreated datePublished" datetime="2023-05-12T23:22:00+08:00">2023-05-12</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-05-13 11:40:35" itemprop="dateModified" datetime="2023-05-13T11:40:35+08:00">2023-05-13</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/cs-lab/" itemprop="url" rel="index"><span itemprop="name">cs-lab</span></a>
-                </span>
-            </span>
-
-          
-            <span id="/2023/05/12/cs144lab/" class="post-meta-item leancloud_visitors" data-flag-title="cs144 lab0 - lab4" title="阅读次数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span class="leancloud-visitors-count"></span>
-            </span>
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Valine：</span>
-    
-    <a title="valine" href="/2023/05/12/cs144lab/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2023/05/12/cs144lab/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="【计算机网络】cs144-lab"><a href="#【计算机网络】cs144-lab" class="headerlink" title="【计算机网络】cs144 lab"></a>【计算机网络】cs144 lab</h1><p><strong>为了更好的贯彻手拿TCP脚踩UDP兜里装个ICMP的意愿，遂写一个小lab</strong></p>
-<p>由于再写时官网还没有更新完文档于是用了一个大佬搭的备份19年版本<a target="_blank" rel="noopener" href="https://www.cnblogs.com/kangyupl/p/stanford_cs144_labs.html">【计算机网络】Stanford CS144 Lab Assignments 学习笔记 - 康宇PL - 博客园 (cnblogs.com)</a></p>
-<p>我的gitee链接: <a target="_blank" rel="noopener" href="https://gitee.com/dying1122/cs144-lab#%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95%E4%B8%8Ebug">cs144 lab: cs144 lab 目前正在一个 一个打补丁往后写 (gitee.com)</a></p>
-<h6 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h6><p>本lab实验环境在centos g++ 8 实现 cmake版本12</p>
-<p>如果make 报错在tun.cc  可在里面添加头文件</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;tun.hh&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;util.hh&quot;</span></span></span><br><span class="line"><span class="comment">//下面这俩个</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br></pre></td></tr></table></figure>
-
-<p>需要调试可看lab4里的调试技巧</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2023/05/12/cs144lab/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
