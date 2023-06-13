@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/earth.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/earth.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.dying.asia","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="C++ Primer (CMU15445 project0 )介绍：课程网站：CMU 15-445&#x2F;645 :: Intro to Database Systems (Fall 2022) github：cmu-db&#x2F;bustub: cmu15445 是基于c++17 要求实现一个DBMS并且最后可以运行sql查询，再课程中Andy 也说这是可以用来在简历上写的项目，并且也可以拿到很不错的offe">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ Primer (CMU15445 project0 )">
+<meta property="og:url" content="https://www.dying.asia/2023/06/13/C++%20Primer%20(CMU15445%20project0%20)/index.html">
+<meta property="og:site_name" content="dying Blog">
+<meta property="og:description" content="C++ Primer (CMU15445 project0 )介绍：课程网站：CMU 15-445&#x2F;645 :: Intro to Database Systems (Fall 2022) github：cmu-db&#x2F;bustub: cmu15445 是基于c++17 要求实现一个DBMS并且最后可以运行sql查询，再课程中Andy 也说这是可以用来在简历上写的项目，并且也可以拿到很不错的offe">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-06-13T15:22:00.000Z">
+<meta property="article:modified_time" content="2023-06-13T12:36:37.629Z">
+<meta property="article:author" content="dying">
+<meta property="article:tag" content="cmu15445">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://www.dying.asia/2023/06/13/C++%20Primer%20(CMU15445%20project0%20)/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>C++ Primer (CMU15445 project0 ) | dying Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">dying Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>资源</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-guestbook">
+
+    <a href="/guestbook/" rel="section"><i class="fa fa-book fa-fw"></i>留言</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.dying.asia/2023/06/13/C++%20Primer%20(CMU15445%20project0%20)/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/head.jpg">
+      <meta itemprop="name" content="dying">
+      <meta itemprop="description" content="想都是问题，做才是答案">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dying Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          C++ Primer (CMU15445 project0 )
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-06-13 23:22:00 / 修改时间：20:36:37" itemprop="dateCreated datePublished" datetime="2023-06-13T23:22:00+08:00">2023-06-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/cs-lab/" itemprop="url" rel="index"><span itemprop="name">cs-lab</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2023/06/13/C++%20Primer%20(CMU15445%20project0%20)/" class="post-meta-item leancloud_visitors" data-flag-title="C++ Primer (CMU15445 project0 )" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2023/06/13/C++%20Primer%20(CMU15445%20project0%20)/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2023/06/13/C++%20Primer%20(CMU15445%20project0%20)/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="C-Primer-CMU15445-project0"><a href="#C-Primer-CMU15445-project0" class="headerlink" title="C++ Primer (CMU15445 project0 )"></a>C++ Primer (CMU15445 project0 )</h1><h4 id="介绍："><a href="#介绍：" class="headerlink" title="介绍："></a>介绍：</h4><p>课程网站：<a target="_blank" rel="noopener" href="https://15445.courses.cs.cmu.edu/fall2022/">CMU 15-445/645 :: Intro to Database Systems (Fall 2022)</a></p>
+<p>github：<a target="_blank" rel="noopener" href="https://github.com/cmu-db/bustub">cmu-db/bustub:</a></p>
+<p>cmu15445 是基于c++17 要求实现一个DBMS并且最后可以运行sql查询，再课程中Andy 也说这是可以用来在简历上写的项目，并且也可以拿到很不错的offer（但是国内写的人很多，就当一个练手的项目了，毕竟是要把基础四大件要写一遍的）</p>
+<h3 id="环境："><a href="#环境：" class="headerlink" title="环境："></a>环境：</h3><p>课程标准环境是：ubuntu + clang-12+ CMake(较高版本) </p>
+<p>我的环境 ubuntu18 + clang-12 + CMake3.22.1（ 之前用centos但是有bug被迫换系统））</p>
+<p>在GitHub上安照给出的教程clone项目并编译即可，GitHub都给出的详细步骤，需要注意的是Github上是最新版本，如果想做之前版本需要找到之前的commit历史然后git 回滚一下就可以</p>
+<p>然后在build目录测试运行test</p>
+<h3 id="调试："><a href="#调试：" class="headerlink" title="调试："></a>调试：</h3><p>我使用的是vscode  然后用gdb调试</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">&quot;version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;0.2.0&quot;</span><span class="punctuation">,</span></span><br><span class="line">   <span class="attr">&quot;configurations&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">       <span class="punctuation">&#123;</span></span><br><span class="line">           <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;bustub debug&quot;</span><span class="punctuation">,</span> <span class="comment">//!挑个容易识别的名字</span></span><br><span class="line">           <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;cppdbg&quot;</span><span class="punctuation">,</span></span><br><span class="line">           <span class="attr">&quot;request&quot;</span><span class="punctuation">:</span> <span class="string">&quot;launch&quot;</span><span class="punctuation">,</span></span><br><span class="line">           <span class="attr">&quot;program&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$&#123;workspaceFolder&#125;/bustub-private/build/test/$&#123;fileBasenameNoExtension&#125;&quot;</span><span class="punctuation">,</span> <span class="comment">//!设置为测试程序源码相对应的目标程序路径</span></span><br><span class="line">           <span class="attr">&quot;args&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">           <span class="attr">&quot;stopAtEntry&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span><span class="punctuation">,</span></span><br><span class="line">           <span class="attr">&quot;cwd&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$&#123;workspaceFolder&#125;&quot;</span><span class="punctuation">,</span></span><br><span class="line">           <span class="attr">&quot;environment&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">           <span class="attr">&quot;externalConsole&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span><span class="punctuation">,</span></span><br><span class="line">           <span class="attr">&quot;MIMode&quot;</span><span class="punctuation">:</span> <span class="string">&quot;gdb&quot;</span><span class="punctuation">,</span></span><br><span class="line">           <span class="attr">&quot;setupCommands&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">               <span class="punctuation">&#123;</span></span><br><span class="line">                   <span class="attr">&quot;description&quot;</span><span class="punctuation">:</span> <span class="string">&quot;为 gdb 启用整齐打印&quot;</span><span class="punctuation">,</span></span><br><span class="line">                   <span class="attr">&quot;text&quot;</span><span class="punctuation">:</span> <span class="string">&quot;-enable-pretty-printing&quot;</span><span class="punctuation">,</span></span><br><span class="line">                   <span class="attr">&quot;ignoreFailures&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br><span class="line">               <span class="punctuation">&#125;</span></span><br><span class="line">           <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">           <span class="comment">//&quot;preLaunchTask&quot;: &quot;C/C++: g++-8 build active file&quot;,  //!不需要前置任务</span></span><br><span class="line">           <span class="attr">&quot;miDebuggerPath&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/usr/bin/gdb&quot;</span></span><br><span class="line">       <span class="punctuation">&#125;</span></span><br><span class="line">   <span class="punctuation">]</span></span><br></pre></td></tr></table></figure>
+
+<p>由于test下的测试文件初始并不是打开的，所以测试时要进入对应测试文件把DISABLE_删除</p>
+<h3 id="Project0"><a href="#Project0" class="headerlink" title="Project0:"></a>Project0:</h3><p>本实验是一个简单使用c++语法写一个字典树</p>
+<p>首先实现分为三个类</p>
+<h4 id="TrieNode-Class"><a href="#TrieNode-Class" class="headerlink" title="TrieNode Class"></a>TrieNode Class</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">原文：</span><br><span class="line">TrieNode类在Trie中定义单个节点。TrieNode保存一个键的一个字符</span><br><span class="line">is_end_标志表示它是否标志着一个键字符串的结束。</span><br><span class="line">它的子节点存储为char到unique_ptr&lt;TrieNode&gt;的映射。子节点的key字符用于访问children_map。</span><br><span class="line">注意，子节点为unique_ptr意味着在将它们分配给其他变量时需要小心。</span><br><span class="line">InsertChildNode和GetChildNode都返回一个指向unique_ptr的指针，这样你就可以访问unique_ptr的数据，而不需要复制或放弃所有权。</span><br></pre></td></tr></table></figure>
+
+<p>就是实现对一个结点的操作，每个结点都是有自己的key_char_然后该结点可能拥有多个叶子（存储在unordered_map里）比较简单按照注释给出的实现即可</p>
+<h4 id="TrieNodeWithValue-Class"><a href="#TrieNodeWithValue-Class" class="headerlink" title="TrieNodeWithValue Class"></a>TrieNodeWithValue Class</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">原文：</span><br><span class="line">TrieNodeWithValue类继承自TrieNode，它表示一个终端节点(节点的key_char是键的结束字符)，可以保存任意类型t的值。它的is_end_标志总是为真。</span><br><span class="line">当您使用给定的键遍历triendewithvalue并到达结束字符时，您将基于不同的场景为triendewithvalue调用不同的构造函数(详细信息请参见triendewithvalue一节)。现在，您只需要知道TrieNodeWithValue(char key_char, T value)构造函数用给定的键字符和值从头创建一个TrieNodeWithValue。</span><br></pre></td></tr></table></figure>
+
+<p>这个就是相当于一个结点的另一种形态用来存字典树的value的</p>
+<h4 id="Trie-Class"><a href="#Trie-Class" class="headerlink" title="Trie Class"></a>Trie Class</h4><p>该类是结合前俩个实现就可以了，简单的数据结构实现其中主要方法是</p>
+<h6 id="Insert"><a href="#Insert" class="headerlink" title="Insert"></a>Insert</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">若key不存在创建并将叶子结点转成TrieNodeWithValue 然后存储值</span><br><span class="line">若key存在但是叶子结点并不是TrieNodeWithValue那么需要把叶子结点转成TrieNodeWithValue 存储值后挂上去</span><br><span class="line">若key存在但是叶子结点的is_end_ == true说明已经存在对应的key和value了，所以应该返回不要更新值</span><br></pre></td></tr></table></figure>
+
+<h6 id="Remove"><a href="#Remove" class="headerlink" title="Remove"></a>Remove</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">根据给定的键遍历树。如果键不存在，立即返回。</span><br><span class="line">将终端节点的is_end_标志设置为false。</span><br><span class="line">如果此终端节点没有任何子节点，则通过从其父节点的children_映射中删除它来删除它。</span><br><span class="line">遍历整个树并递归地删除没有子节点的节点。当遇到有子节点时停止。</span><br></pre></td></tr></table></figure>
+
+<h6 id="GetValue"><a href="#GetValue" class="headerlink" title="GetValue"></a>GetValue</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">给定一个键，返回其对应的t类型值。如果没有找到键或提供的类型与节点的值类型不匹配，则将success设置为false。为了检查这两种类型是否相同，dynamic_cast 转换TrieNode指针为triendewithvalue &lt;T&gt;指针。如果转换结果为nullptr，则类型T与存储在节点中的值不匹配。</span><br></pre></td></tr></table></figure>
+
+<p>上述讲义上给的比较全了，按照对应一步一步写就可以了</p>
+
+    </div>
+
+    
+    
+    
+
+      
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+      
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cmu15445/" rel="tag"># cmu15445</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/06/07/LRU/" rel="prev" title="LRU缓存 算法实现与分析">
+      <i class="fa fa-chevron-left"></i> LRU缓存 算法实现与分析
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/06/13/Buffer%20Pool%EF%BC%88cmu15445%20project1%EF%BC%89/" rel="next" title="Buffer Pool (cmu15445 project1)">
+      Buffer Pool (cmu15445 project1) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#C-Primer-CMU15445-project0"><span class="nav-number">1.</span> <span class="nav-text">C++ Primer (CMU15445 project0 )</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D%EF%BC%9A"><span class="nav-number">1.0.0.1.</span> <span class="nav-text">介绍：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%EF%BC%9A"><span class="nav-number">1.0.1.</span> <span class="nav-text">环境：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%EF%BC%9A"><span class="nav-number">1.0.2.</span> <span class="nav-text">调试：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Project0"><span class="nav-number">1.0.3.</span> <span class="nav-text">Project0:</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#TrieNode-Class"><span class="nav-number">1.0.3.1.</span> <span class="nav-text">TrieNode Class</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TrieNodeWithValue-Class"><span class="nav-number">1.0.3.2.</span> <span class="nav-text">TrieNodeWithValue Class</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Trie-Class"><span class="nav-number">1.0.3.3.</span> <span class="nav-text">Trie Class</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#Insert"><span class="nav-number">1.0.3.3.0.1.</span> <span class="nav-text">Insert</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#Remove"><span class="nav-number">1.0.3.3.0.2.</span> <span class="nav-text">Remove</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#GetValue"><span class="nav-number">1.0.3.3.0.3.</span> <span class="nav-text">GetValue</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="dying"
+      src="/images/head.jpg">
+  <p class="site-author-name" itemprop="name">dying</p>
+  <div class="site-description" itemprop="description">想都是问题，做才是答案</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/QYZing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;QYZing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:2062656460@qq.com" title="E-Mail → mailto:2062656460@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">蒙ICP备2023000237号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dying</span>
+</div>
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/canvas_sphere.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'wFD2TJDXerlwQLJQOksbriCK-gzGzoHsz',
+      appKey     : 'ErOISFE8uucXKBtDq5EVrhh4',
+      placeholder: "输入你的评论",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '3' || 10,
+      visitor    : true,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : true,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

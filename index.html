@@ -172,6 +172,246 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.dying.asia/2023/06/13/Buffer%20Pool%EF%BC%88cmu15445%20project1%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/head.jpg">
+      <meta itemprop="name" content="dying">
+      <meta itemprop="description" content="想都是问题，做才是答案">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dying Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/06/13/Buffer%20Pool%EF%BC%88cmu15445%20project1%EF%BC%89/" class="post-title-link" itemprop="url">Buffer Pool (cmu15445 project1)</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-06-13 23:22:00 / 修改时间：22:04:49" itemprop="dateCreated datePublished" datetime="2023-06-13T23:22:00+08:00">2023-06-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/cs-lab/" itemprop="url" rel="index"><span itemprop="name">cs-lab</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2023/06/13/Buffer%20Pool%EF%BC%88cmu15445%20project1%EF%BC%89/" class="post-meta-item leancloud_visitors" data-flag-title="Buffer Pool (cmu15445 project1)" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2023/06/13/Buffer%20Pool%EF%BC%88cmu15445%20project1%EF%BC%89/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2023/06/13/Buffer%20Pool%EF%BC%88cmu15445%20project1%EF%BC%89/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="Buffer-Pool（cmu15445-project1）"><a href="#Buffer-Pool（cmu15445-project1）" class="headerlink" title="Buffer Pool（cmu15445 project1）"></a>Buffer Pool（cmu15445 project1）</h1><h3 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h3><p>这次需要实现三个文件 可扩展哈希表，LRU-K  BufferPool</p>
+<p>这个project相较于之前难度上升了许多</p>
+<p>其中 Extendible Hash Table 和 LRU-K Replacement Policy是作为bufferpool的组件使用的</p>
+<h3 id="Extendible-Hash-Table"><a href="#Extendible-Hash-Table" class="headerlink" title="Extendible Hash Table"></a>Extendible Hash Table</h3><p>一开始没有认真就之间写了，用的手法还是侯捷老师讲的那个散列表方法，直接一个vector存桶，然后桶的数量等于目录数量，目录扩容，然后重新分配，很神奇本地测试用例全对，结果线上一塌糊涂，没办法只能恶补一下知识了</p>
+<p>这个hash table采用的是动态扩容的方法，有一个vector作为目录，其中内部类bucket作为桶存储key对应的value</p>
+<p>桶的数量和目录的数量并不是一致的，首先明确几个概念 ：</p>
+<p>全局深度 global_depth_ 是目录的大小2的n次方倍</p>
+<p>局部深度 local_depth 是bucket扩容的次数</p>
+<p>IndexOf计算出来的值其实就是Hash值对目录大小做%的操作，只不过那里是写成&amp;了</p>
+<p>简介一下操作：</p>
+<p>初始化时：global_depth_ 0 只有一个桶 local_depth_也是0</p>
+<p>然后insert时当插不进去要看global_depth_  是不是等于local_depth_如果是将目录扩大俩倍，然后扩大的部分挨个指向对应的桶，global_depth++ ，桶的深度++ ，  然后就是桶分裂，桶数量++</p>
+<p>然后有个注意的点就是：</p>
+<p>当桶满了分裂的时候，是有可能还是分裂到一个桶的，然后这时候一个桶没数据，一个桶有数据，也得没数据的桶被连接到对应的vector中</p>
+<h3 id="LRU-K-Replacement-Policy"><a href="#LRU-K-Replacement-Policy" class="headerlink" title="LRU-K Replacement Policy"></a>LRU-K Replacement Policy</h3><p>LRU-K的话推荐先学习一下LRU然后可以看我之前写的那个博客</p>
+<p>LRU_K 对比LRU的话，其实就是将一个链表分成俩个链表，就是每访问一次其中的值对应的优先级是要++的，</p>
+<p>如果优先级大于等于K那么就放入&gt;=k的那个链表，这标志这我们以后可能很频繁的要访问他，每访问一次&gt;=k的数据时需要记录一下他的时间搓，将来以后淘汰的话是要淘汰最久没访问过的数据的（&lt;k的链表没有数据时或者他们都不可被驱逐时）</p>
+<p>对于没有到达k次的，访问之后并不需要记录其时间搓</p>
+<p>这个按照文档给出的来，也就不细说了</p>
+<h3 id="Buffer-Pool-Manager-Instance"><a href="#Buffer-Pool-Manager-Instance" class="headerlink" title="Buffer Pool Manager Instance"></a>Buffer Pool Manager Instance</h3><p>这个部分按照文档来也很容易，前提是仔细的看文档</p>
+<p>对于该类介绍一下其成员</p>
+<p>pages_ 是存储页的数组 每个页是一个基本单位在数据库中</p>
+<p>​    page_id_ 是该页的编号，默认是buffer pool manager 分配</p>
+<p>​    pin_count_ 是当前使用该页的进程\线程的数量</p>
+<p>​    is_dirty_  标记这该页有没有被修改</p>
+<p>​    data_ 页中要存放的数据</p>
+<p>frame_id_t 是pages_的下标相当于</p>
+<p>page_table_ 负责映射frame_id和page_id之间的关系</p>
+<p>disk_manager_ 是负责磁盘管理，数据写入写出之类的，提供好了只需要用其接口就可以</p>
+<p>free_list_当前pages__空闲的部分</p>
+<p>主要介绍一下FetchPgImp</p>
+<p>FetchPgImp 要求获取一个页面的指针：</p>
+<p>​    如果缓存中有那么直接获取到，然后Pin_count++ replacer_也要记录，并且设置不可驱逐</p>
+<p>​    如果没有就要看有没有i空闲的frame_id，有的话，需要调用disk_manager_ 来read传入page的id的数据，并且    对该page做好初始化工作</p>
+<p>​    如果没有的话要看当前有没有能驱逐的页面，有的话需要查看该页面是否是脏页面，脏的话需要写回磁盘然后    重置数据，同时也需要注意page_table_的映射关系，剩下和上面差不多</p>
+<p>剩下的函数照着给出的讲义写就可以了，这里说一下，我之前没有仔细看英文直接翻译然后开写，然后翻译还不准导致我UnpinPgImp实现的时候，中文翻译的是pin_count为0直接删除掉，结果这个bug找好久，呜呜，最后看英文才知道是设置一下可驱逐就好了，真是悲哀</p>
+<p>整个项目只有 FetchPgImp和NewPgImp和DeletePgImp代码比较多，不过照着仔细写就没问题，业务逻辑简单，没有扩展哈希麻烦，但是细节比较多</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.dying.asia/2023/06/13/C++%20Primer%20(CMU15445%20project0%20)/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/head.jpg">
+      <meta itemprop="name" content="dying">
+      <meta itemprop="description" content="想都是问题，做才是答案">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dying Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/06/13/C++%20Primer%20(CMU15445%20project0%20)/" class="post-title-link" itemprop="url">C++ Primer (CMU15445 project0 )</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-06-13 23:22:00 / 修改时间：20:36:37" itemprop="dateCreated datePublished" datetime="2023-06-13T23:22:00+08:00">2023-06-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/cs-lab/" itemprop="url" rel="index"><span itemprop="name">cs-lab</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2023/06/13/C++%20Primer%20(CMU15445%20project0%20)/" class="post-meta-item leancloud_visitors" data-flag-title="C++ Primer (CMU15445 project0 )" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2023/06/13/C++%20Primer%20(CMU15445%20project0%20)/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2023/06/13/C++%20Primer%20(CMU15445%20project0%20)/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="C-Primer-CMU15445-project0"><a href="#C-Primer-CMU15445-project0" class="headerlink" title="C++ Primer (CMU15445 project0 )"></a>C++ Primer (CMU15445 project0 )</h1><h4 id="介绍："><a href="#介绍：" class="headerlink" title="介绍："></a>介绍：</h4><p>课程网站：<a target="_blank" rel="noopener" href="https://15445.courses.cs.cmu.edu/fall2022/">CMU 15-445/645 :: Intro to Database Systems (Fall 2022)</a></p>
+<p>github：<a target="_blank" rel="noopener" href="https://github.com/cmu-db/bustub">cmu-db/bustub:</a></p>
+<p>cmu15445 是基于c++17 要求实现一个DBMS并且最后可以运行sql查询，再课程中Andy 也说这是可以用来在简历上写的项目，并且也可以拿到很不错的offer（但是国内写的人很多，就当一个练手的项目了，毕竟是要把基础四大件要写一遍的）</p>
+<h3 id="环境："><a href="#环境：" class="headerlink" title="环境："></a>环境：</h3><p>课程标准环境是：ubuntu + clang-12+ CMake(较高版本) </p>
+<p>我的环境 ubuntu18 + clang-12 + CMake3.22.1（ 之前用centos但是有bug被迫换系统））</p>
+<p>在GitHub上安照给出的教程clone项目并编译即可，GitHub都给出的详细步骤，需要注意的是Github上是最新版本，如果想做之前版本需要找到之前的commit历史然后git 回滚一下就可以</p>
+<p>然后在build目录测试运行test</p>
+<h3 id="调试："><a href="#调试：" class="headerlink" title="调试："></a>调试：</h3><p>我使用的是vscode  然后用gdb调试</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">&quot;version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;0.2.0&quot;</span><span class="punctuation">,</span></span><br><span class="line">   <span class="attr">&quot;configurations&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">       <span class="punctuation">&#123;</span></span><br><span class="line">           <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;bustub debug&quot;</span><span class="punctuation">,</span> <span class="comment">//!挑个容易识别的名字</span></span><br><span class="line">           <span class="attr">&quot;type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;cppdbg&quot;</span><span class="punctuation">,</span></span><br><span class="line">           <span class="attr">&quot;request&quot;</span><span class="punctuation">:</span> <span class="string">&quot;launch&quot;</span><span class="punctuation">,</span></span><br><span class="line">           <span class="attr">&quot;program&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$&#123;workspaceFolder&#125;/bustub-private/build/test/$&#123;fileBasenameNoExtension&#125;&quot;</span><span class="punctuation">,</span> <span class="comment">//!设置为测试程序源码相对应的目标程序路径</span></span><br><span class="line">           <span class="attr">&quot;args&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">           <span class="attr">&quot;stopAtEntry&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span><span class="punctuation">,</span></span><br><span class="line">           <span class="attr">&quot;cwd&quot;</span><span class="punctuation">:</span> <span class="string">&quot;$&#123;workspaceFolder&#125;&quot;</span><span class="punctuation">,</span></span><br><span class="line">           <span class="attr">&quot;environment&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">           <span class="attr">&quot;externalConsole&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span><span class="punctuation">,</span></span><br><span class="line">           <span class="attr">&quot;MIMode&quot;</span><span class="punctuation">:</span> <span class="string">&quot;gdb&quot;</span><span class="punctuation">,</span></span><br><span class="line">           <span class="attr">&quot;setupCommands&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">               <span class="punctuation">&#123;</span></span><br><span class="line">                   <span class="attr">&quot;description&quot;</span><span class="punctuation">:</span> <span class="string">&quot;为 gdb 启用整齐打印&quot;</span><span class="punctuation">,</span></span><br><span class="line">                   <span class="attr">&quot;text&quot;</span><span class="punctuation">:</span> <span class="string">&quot;-enable-pretty-printing&quot;</span><span class="punctuation">,</span></span><br><span class="line">                   <span class="attr">&quot;ignoreFailures&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br><span class="line">               <span class="punctuation">&#125;</span></span><br><span class="line">           <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">           <span class="comment">//&quot;preLaunchTask&quot;: &quot;C/C++: g++-8 build active file&quot;,  //!不需要前置任务</span></span><br><span class="line">           <span class="attr">&quot;miDebuggerPath&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/usr/bin/gdb&quot;</span></span><br><span class="line">       <span class="punctuation">&#125;</span></span><br><span class="line">   <span class="punctuation">]</span></span><br></pre></td></tr></table></figure>
+
+<p>由于test下的测试文件初始并不是打开的，所以测试时要进入对应测试文件把DISABLE_删除</p>
+<h3 id="Project0"><a href="#Project0" class="headerlink" title="Project0:"></a>Project0:</h3><p>本实验是一个简单使用c++语法写一个字典树</p>
+<p>首先实现分为三个类</p>
+<h4 id="TrieNode-Class"><a href="#TrieNode-Class" class="headerlink" title="TrieNode Class"></a>TrieNode Class</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">原文：</span><br><span class="line">TrieNode类在Trie中定义单个节点。TrieNode保存一个键的一个字符</span><br><span class="line">is_end_标志表示它是否标志着一个键字符串的结束。</span><br><span class="line">它的子节点存储为char到unique_ptr&lt;TrieNode&gt;的映射。子节点的key字符用于访问children_map。</span><br><span class="line">注意，子节点为unique_ptr意味着在将它们分配给其他变量时需要小心。</span><br><span class="line">InsertChildNode和GetChildNode都返回一个指向unique_ptr的指针，这样你就可以访问unique_ptr的数据，而不需要复制或放弃所有权。</span><br></pre></td></tr></table></figure>
+
+<p>就是实现对一个结点的操作，每个结点都是有自己的key_char_然后该结点可能拥有多个叶子（存储在unordered_map里）比较简单按照注释给出的实现即可</p>
+<h4 id="TrieNodeWithValue-Class"><a href="#TrieNodeWithValue-Class" class="headerlink" title="TrieNodeWithValue Class"></a>TrieNodeWithValue Class</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">原文：</span><br><span class="line">TrieNodeWithValue类继承自TrieNode，它表示一个终端节点(节点的key_char是键的结束字符)，可以保存任意类型t的值。它的is_end_标志总是为真。</span><br><span class="line">当您使用给定的键遍历triendewithvalue并到达结束字符时，您将基于不同的场景为triendewithvalue调用不同的构造函数(详细信息请参见triendewithvalue一节)。现在，您只需要知道TrieNodeWithValue(char key_char, T value)构造函数用给定的键字符和值从头创建一个TrieNodeWithValue。</span><br></pre></td></tr></table></figure>
+
+<p>这个就是相当于一个结点的另一种形态用来存字典树的value的</p>
+<h4 id="Trie-Class"><a href="#Trie-Class" class="headerlink" title="Trie Class"></a>Trie Class</h4><p>该类是结合前俩个实现就可以了，简单的数据结构实现其中主要方法是</p>
+<h6 id="Insert"><a href="#Insert" class="headerlink" title="Insert"></a>Insert</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">若key不存在创建并将叶子结点转成TrieNodeWithValue 然后存储值</span><br><span class="line">若key存在但是叶子结点并不是TrieNodeWithValue那么需要把叶子结点转成TrieNodeWithValue 存储值后挂上去</span><br><span class="line">若key存在但是叶子结点的is_end_ == true说明已经存在对应的key和value了，所以应该返回不要更新值</span><br></pre></td></tr></table></figure>
+
+<h6 id="Remove"><a href="#Remove" class="headerlink" title="Remove"></a>Remove</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">根据给定的键遍历树。如果键不存在，立即返回。</span><br><span class="line">将终端节点的is_end_标志设置为false。</span><br><span class="line">如果此终端节点没有任何子节点，则通过从其父节点的children_映射中删除它来删除它。</span><br><span class="line">遍历整个树并递归地删除没有子节点的节点。当遇到有子节点时停止。</span><br></pre></td></tr></table></figure>
+
+<h6 id="GetValue"><a href="#GetValue" class="headerlink" title="GetValue"></a>GetValue</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">给定一个键，返回其对应的t类型值。如果没有找到键或提供的类型与节点的值类型不匹配，则将success设置为false。为了检查这两种类型是否相同，dynamic_cast 转换TrieNode指针为triendewithvalue &lt;T&gt;指针。如果转换结果为nullptr，则类型T与存储在节点中的值不匹配。</span><br></pre></td></tr></table></figure>
+
+<p>上述讲义上给的比较全了，按照对应一步一步写就可以了</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://www.dying.asia/2023/06/07/LRU/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -840,7 +1080,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-count">8</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -853,7 +1093,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
