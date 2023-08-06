@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/earth.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/earth.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.dying.asia","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="ucore lab3 虚拟内存管理首先查看有关该lab的数据结构vma: 描述了一块连续的虚拟内存空间,保证start&lt;&#x3D;end，list_link是一个双向链表，按照从小到大的顺序把一系列用vma_struct表示的虚拟内存空间链接起来，并且还要求这些链起来的vma_struct应该是不相交的，即vma之间的地址空间无交集。 1234567struct vma_struct &amp;#123;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ucore lab3">
+<meta property="og:url" content="https://www.dying.asia/2023/08/06/ucore%20lab3%20%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/index.html">
+<meta property="og:site_name" content="dying Blog">
+<meta property="og:description" content="ucore lab3 虚拟内存管理首先查看有关该lab的数据结构vma: 描述了一块连续的虚拟内存空间,保证start&lt;&#x3D;end，list_link是一个双向链表，按照从小到大的顺序把一系列用vma_struct表示的虚拟内存空间链接起来，并且还要求这些链起来的vma_struct应该是不相交的，即vma之间的地址空间无交集。 1234567struct vma_struct &amp;#123;">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-08-06T07:45:00.000Z">
+<meta property="article:modified_time" content="2023-08-06T07:45:01.212Z">
+<meta property="article:author" content="dying">
+<meta property="article:tag" content="ucore">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://www.dying.asia/2023/08/06/ucore%20lab3%20%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>ucore lab3 | dying Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">dying Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>资源</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-guestbook">
+
+    <a href="/guestbook/" rel="section"><i class="fa fa-book fa-fw"></i>留言</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.dying.asia/2023/08/06/ucore%20lab3%20%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/head.jpg">
+      <meta itemprop="name" content="dying">
+      <meta itemprop="description" content="想都是问题，做才是答案">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dying Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ucore lab3
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-08-06 15:45:00 / 修改时间：15:45:01" itemprop="dateCreated datePublished" datetime="2023-08-06T15:45:00+08:00">2023-08-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">操作系统</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2023/08/06/ucore%20lab3%20%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" class="post-meta-item leancloud_visitors" data-flag-title="ucore lab3" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2023/08/06/ucore%20lab3%20%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2023/08/06/ucore%20lab3%20%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="ucore-lab3-虚拟内存管理"><a href="#ucore-lab3-虚拟内存管理" class="headerlink" title="ucore lab3 虚拟内存管理"></a>ucore lab3 虚拟内存管理</h1><h6 id="首先查看有关该lab的数据结构"><a href="#首先查看有关该lab的数据结构" class="headerlink" title="首先查看有关该lab的数据结构"></a>首先查看有关该lab的数据结构</h6><p>vma: 描述了一块连续的虚拟内存空间,保证start&lt;=end，<code>list_link</code>是一个双向链表，按照从小到大的顺序把一系列用<code>vma_struct</code>表示的虚拟内存空间链接起来，并且还要求这些链起来的<code>vma_struct</code>应该是不相交的，即vma之间的地址空间无交集。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">vma_struct</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">mm_struct</span> *<span class="title">vm_mm</span>;</span> <span class="comment">// the set of vma using the same PDT </span></span><br><span class="line">    <span class="type">uintptr_t</span> vm_start;      <span class="comment">// start addr of vma      </span></span><br><span class="line">    <span class="type">uintptr_t</span> vm_end;        <span class="comment">// end addr of vma, not include the vm_end itself</span></span><br><span class="line">    <span class="type">uint32_t</span> vm_flags;       <span class="comment">// flags of vma</span></span><br><span class="line">    <span class="type">list_entry_t</span> list_link;  <span class="comment">// linear list link which sorted by start addr of vma</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>mm_struct：管理使用同一PDT的vma集合的结构体</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">mm_struct</span> &#123;</span>  </span><br><span class="line">        <span class="type">list_entry_t</span> mmap_list;  <span class="comment">//双向链表头，链接了所有属于同一页目录表的虚拟内存空间</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">vma_struct</span> *<span class="title">mmap_cache</span>;</span>  <span class="comment">//指向当前正在使用的虚拟内存空间</span></span><br><span class="line">        <span class="type">pde_t</span> *pgdir; <span class="comment">//指向的就是 mm_struct数据结构所维护的页表</span></span><br><span class="line">        <span class="type">int</span> map_count; <span class="comment">//记录mmap_list里面链接的vma_struct的个数</span></span><br><span class="line">        <span class="type">void</span> *sm_priv; <span class="comment">//指向用来链接记录页访问情况的链表头</span></span><br><span class="line"> &#125;;  </span><br></pre></td></tr></table></figure>
+
+<p>mmap_list是双向链表头，链接了所有属于同一页目录表的虚拟内存空间，mmap_cache是指向当前正在使用的虚拟内存空间，由于操作系统执行的“局部性”原理，当前正在用到的虚拟内存空间在接下来的操作中可能还会用到，这时就不需要查链表，而是直接使用此指针就可找到下一次要用到的虚拟内存空间。pgdir 所指向的就是 mm_struct数据结构所维护的页表。通过访问pgdir可以查找某虚拟地址对应的页表项是否存在以及页表项的属性等。map_count记录mmap_list 里面链接的 vma_struct的个数。sm_priv指向用来链接记录页访问情况的链表头，这建立了mm_struct和后续要讲到的swap_manager之间的联系。</p>
+<h4 id="练习1：给未被映射的地址映射上物理页（需要编程）"><a href="#练习1：给未被映射的地址映射上物理页（需要编程）" class="headerlink" title="练习1：给未被映射的地址映射上物理页（需要编程）"></a>练习1：给未被映射的地址映射上物理页（需要编程）</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">当启动分页机制以后，如果一条指令或数据的虚拟地址所对应的物理页框不在内存中或者访问的类型有错误（比如写一个只读页或用户态程序访问内核态的数据等），就会发生页访问异常。产生页访问异常的原因主要有：</span><br><span class="line"></span><br><span class="line">目标页帧不存在（页表项全为0，即该线性地址与物理地址尚未建立映射或者已经撤销)；</span><br><span class="line">相应的物理页帧不在内存中（页表项非空，但Present标志位=0，比如在swap分区或磁盘文件上)，这在本次实验中会出现，我们将在下面介绍换页机制实现时进一步讲解如何处理；</span><br><span class="line">不满足访问权限(此时页表项P标志=1，但低权限的程序试图访问高权限的地址空间，或者有程序试图写只读页面).</span><br><span class="line">当出现上面情况之一，那么就会产生页面page fault（#PF）异常。</span><br><span class="line">CPU会把产生异常的线性地址存储在CR2中，并且把表示页访问异常类型的值（简称页访问异常错误码，errorCode）保存在中断栈中。</span><br></pre></td></tr></table></figure>
+
+<p>do_pgfault()函数从CR2寄存器中获取页错误异常的虚拟地址，根据error code来查找这个虚拟地址是否在某一个VMA的地址范围内，并且具有正确的权限。如果满足上述两个要求，则需要为分配一个物理页。<br>所以出现page fault后，会有一个中断状态指针tf，传到trap()中处理：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span></span><br><span class="line"><span class="title function_">trap</span><span class="params">(<span class="keyword">struct</span> trapframe *tf)</span> &#123;</span><br><span class="line">    <span class="comment">// dispatch based on what type of trap occurred</span></span><br><span class="line">    trap_dispatch(tf);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>调用trap_dispatch():</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span></span><br><span class="line"><span class="title function_">trap_dispatch</span><span class="params">(<span class="keyword">struct</span> trapframe *tf)</span> &#123;</span><br><span class="line">    <span class="type">char</span> c;</span><br><span class="line">    <span class="type">int</span> ret;</span><br><span class="line"><span class="keyword">switch</span> (tf-&gt;tf_trapno) &#123;</span><br><span class="line"><span class="keyword">case</span> T_PGFLT:  <span class="comment">//page fault页访问错误</span></span><br><span class="line">    <span class="keyword">if</span> ((ret = pgfault_handler(tf)) != <span class="number">0</span>) &#123;</span><br><span class="line">        print_trapframe(tf);</span><br><span class="line">        panic(<span class="string">&quot;handle pgfault failed. %e\n&quot;</span>, ret);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>因为此时应该是page fault，所以调用pgfault_handler()：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span></span><br><span class="line"><span class="title function_">pgfault_handler</span><span class="params">(<span class="keyword">struct</span> trapframe *tf)</span> &#123;</span><br><span class="line">    <span class="keyword">extern</span> <span class="class"><span class="keyword">struct</span> <span class="title">mm_struct</span> *<span class="title">check_mm_struct</span>;</span></span><br><span class="line">    print_pgfault(tf);</span><br><span class="line">    <span class="keyword">if</span> (check_mm_struct != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> do_pgfault(check_mm_struct, tf-&gt;tf_err, rcr2());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//CR2存储了产生异常的线性地址</span></span><br><span class="line">    panic(<span class="string">&quot;unhandled page fault.\n&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>然后调用了do_pgfault()</p>
+<p>给未被映射的地址映射上物理页。设置访问权限 的时候需要参考页面所在 VMA 的权限，同时需要注意映射物理页时需要操作内存控制 结构所指定的页表，而不是内核的页表。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ptep = get_pte(mm-&gt;pgdir , addr , <span class="number">1</span>);  <span class="comment">//(1) try to find a pte, if pte&#x27;s PT(Page Table) isn&#x27;t existed, then create a PT.</span></span><br><span class="line"><span class="keyword">if</span>(ptep == <span class="literal">NULL</span>)&#123;</span><br><span class="line">    cprintf(<span class="string">&quot;get_pte in do_pgfault failed\n&quot;</span>);</span><br><span class="line">    <span class="keyword">goto</span> failed;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (*ptep == <span class="number">0</span>) &#123;                      <span class="comment">//(2) if the phy addr isn&#x27;t exist, then alloc a page &amp; map the phy addr with logical addr</span></span><br><span class="line">    <span class="keyword">if</span>(pgdir_alloc_page(mm-&gt;pgdir , addr , perm) == <span class="literal">NULL</span>)&#123;</span><br><span class="line">        cprintf(<span class="string">&quot;pgdir_alloc_page in do_pgfault failed\n&quot;</span>);</span><br><span class="line">        <span class="keyword">goto</span> failed;</span><br><span class="line">    &#125;              </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>请描述页目录项（Page Directory Entry）和页表项（Page Table Entry）中组成部分对ucore实现页替换算法的潜在用处。</p>
+</li>
+<li><p>如果ucore的缺页服务例程在执行过程中访问内存，出现了页访问异常，请问硬件要做哪些事情？</p>
+</li>
+</ul>
+<h4 id="练习2：补充完成基于FIFO的页面替换算法"><a href="#练习2：补充完成基于FIFO的页面替换算法" class="headerlink" title="练习2：补充完成基于FIFO的页面替换算法"></a>练习2：补充完成基于FIFO的页面替换算法</h4><p>页替换算法接口</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">swap_manager</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">     <span class="type">const</span> <span class="type">char</span> *name;</span><br><span class="line">     <span class="comment">/* Global initialization for the swap manager */</span></span><br><span class="line">     <span class="type">int</span> (*init)            (<span class="type">void</span>);</span><br><span class="line">     <span class="comment">/* Initialize the priv data inside mm_struct */</span></span><br><span class="line">     <span class="type">int</span> (*init_mm)         (<span class="keyword">struct</span> mm_struct *mm);</span><br><span class="line">     <span class="comment">/* Called when tick interrupt occured */</span></span><br><span class="line">     <span class="type">int</span> (*tick_event)      (<span class="keyword">struct</span> mm_struct *mm);</span><br><span class="line">     <span class="comment">/* Called when map a swappable page into the mm_struct */</span></span><br><span class="line">     <span class="type">int</span> (*map_swappable)   (<span class="keyword">struct</span> mm_struct *mm, <span class="type">uintptr_t</span> addr, <span class="keyword">struct</span> Page *page, <span class="type">int</span> swap_in);</span><br><span class="line">     <span class="comment">/* When a page is marked as shared, this routine is called to</span></span><br><span class="line"><span class="comment">      * delete the addr entry from the swap manager */</span></span><br><span class="line">     <span class="type">int</span> (*set_unswappable) (<span class="keyword">struct</span> mm_struct *mm, <span class="type">uintptr_t</span> addr);</span><br><span class="line">     <span class="comment">/* Try to swap out a page, return then victim */</span></span><br><span class="line">     <span class="type">int</span> (*swap_out_victim) (<span class="keyword">struct</span> mm_struct *mm, <span class="keyword">struct</span> Page **ptr_page, <span class="type">int</span> in_tick);</span><br><span class="line">     <span class="comment">/* check the page relpacement algorithm */</span></span><br><span class="line">     <span class="type">int</span> (*check_swap)(<span class="type">void</span>);     </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>do_pgfault()函数中的部分代码：用于执行页面从磁盘获取并设置页面可替换</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(swap_init_ok) &#123;</span><br><span class="line">           <span class="class"><span class="keyword">struct</span> <span class="title">Page</span> *<span class="title">page</span>=</span><span class="literal">NULL</span>;</span><br><span class="line">           <span class="keyword">if</span>(swap_in(mm , addr , &amp;page) != <span class="number">0</span> )&#123;  <span class="comment">//根据mm和addr尝试在磁盘中加载对应的页</span></span><br><span class="line">               cprintf(<span class="string">&quot;swap_in in do_pgfault failed\n&quot;</span>); </span><br><span class="line">               <span class="keyword">goto</span> failed;</span><br><span class="line">           &#125;</span><br><span class="line">           page_insert(mm-&gt;pgdir , page ,addr , perm);     <span class="comment">//(2) 插入页并对物理地址和虚拟地址映射</span></span><br><span class="line">           swap_map_swappable(mm, addr , page , <span class="number">1</span>);       <span class="comment">//(3) 设置为可被切换</span></span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">else</span> &#123;</span><br><span class="line">           cprintf(<span class="string">&quot;no swap_init_ok but ptep is %x, failed\n&quot;</span>,*ptep);</span><br><span class="line">           <span class="keyword">goto</span> failed;</span><br><span class="line">       &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>_fifo_swap_out_vistim</code>函数主要实现页面的换出，<code>_fifo_map_swappable</code>用于添加页面并记录内容。</p>
+<h6 id="fifo-map-swappable：根据规则在头部添加了一下"><a href="#fifo-map-swappable：根据规则在头部添加了一下" class="headerlink" title="_fifo_map_swappable：根据规则在头部添加了一下"></a>_fifo_map_swappable：根据规则在头部添加了一下</h6><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span></span><br><span class="line">_fifo_map_swappable(<span class="keyword">struct</span> mm_struct *mm, <span class="type">uintptr_t</span> addr, <span class="keyword">struct</span> Page *page, <span class="type">int</span> swap_in)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">list_entry_t</span> *head=(<span class="type">list_entry_t</span>*) mm-&gt;sm_priv;</span><br><span class="line">    <span class="type">list_entry_t</span> *entry=&amp;(page-&gt;pra_page_link);</span><br><span class="line"> </span><br><span class="line">    assert(entry != <span class="literal">NULL</span> &amp;&amp; head != <span class="literal">NULL</span>);</span><br><span class="line">    <span class="comment">//record the page access situlation</span></span><br><span class="line">    <span class="comment">/*LAB3 EXERCISE 2: YOUR CODE*/</span> </span><br><span class="line">    <span class="comment">//(1)link the most recent arrival page at the back of the pra_list_head qeueue.</span></span><br><span class="line">    list_add(head , entry);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="fifo-swap-out-victim：删除尾部页面"><a href="#fifo-swap-out-victim：删除尾部页面" class="headerlink" title="_fifo_swap_out_victim：删除尾部页面"></a>_fifo_swap_out_victim：删除尾部页面</h6><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span></span><br><span class="line">_fifo_swap_out_victim(<span class="keyword">struct</span> mm_struct *mm, <span class="keyword">struct</span> Page ** ptr_page, <span class="type">int</span> in_tick)</span><br><span class="line">&#123;</span><br><span class="line">     <span class="type">list_entry_t</span> *head=(<span class="type">list_entry_t</span>*) mm-&gt;sm_priv;</span><br><span class="line">         assert(head != <span class="literal">NULL</span>);</span><br><span class="line">     assert(in_tick==<span class="number">0</span>);</span><br><span class="line">     <span class="comment">/* Select the victim */</span></span><br><span class="line">     <span class="comment">/*LAB3 EXERCISE 2: YOUR CODE*/</span> </span><br><span class="line">     <span class="comment">//(1)  unlink the  earliest arrival page in front of pra_list_head qeueue</span></span><br><span class="line">     <span class="comment">//(2)  set the addr of addr of this page to ptr_page</span></span><br><span class="line">     <span class="type">list_entry_t</span> *ulink_pg = head-&gt;prev;</span><br><span class="line">     assert(head != ulink_pg);</span><br><span class="line">     list_del(ulink_pg);</span><br><span class="line">     <span class="class"><span class="keyword">struct</span> <span class="title">Page</span> *<span class="title">page</span> =</span> le2page(ulink_pg , pra_page_link);</span><br><span class="line">     assert(page != <span class="literal">NULL</span>);</span><br><span class="line">     *ptr_page = page;</span><br><span class="line">     <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+      
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ucore/" rel="tag"># ucore</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/08/06/ucore%20lab4%20%E5%86%85%E6%A0%B8%E7%BA%BF%E7%A8%8B%E7%AE%A1%E7%90%86/" rel="prev" title="ucore lab4">
+      <i class="fa fa-chevron-left"></i> ucore lab4
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/08/06/ucore%20Lab5%20%E7%94%A8%E6%88%B7%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/" rel="next" title="ucore lab5">
+      ucore lab5 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ucore-lab3-%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">ucore lab3 虚拟内存管理</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E9%A6%96%E5%85%88%E6%9F%A5%E7%9C%8B%E6%9C%89%E5%85%B3%E8%AF%A5lab%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-number">1.0.0.0.0.1.</span> <span class="nav-text">首先查看有关该lab的数据结构</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%83%E4%B9%A01%EF%BC%9A%E7%BB%99%E6%9C%AA%E8%A2%AB%E6%98%A0%E5%B0%84%E7%9A%84%E5%9C%B0%E5%9D%80%E6%98%A0%E5%B0%84%E4%B8%8A%E7%89%A9%E7%90%86%E9%A1%B5%EF%BC%88%E9%9C%80%E8%A6%81%E7%BC%96%E7%A8%8B%EF%BC%89"><span class="nav-number">1.0.0.1.</span> <span class="nav-text">练习1：给未被映射的地址映射上物理页（需要编程）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%83%E4%B9%A02%EF%BC%9A%E8%A1%A5%E5%85%85%E5%AE%8C%E6%88%90%E5%9F%BA%E4%BA%8EFIFO%E7%9A%84%E9%A1%B5%E9%9D%A2%E6%9B%BF%E6%8D%A2%E7%AE%97%E6%B3%95"><span class="nav-number">1.0.0.2.</span> <span class="nav-text">练习2：补充完成基于FIFO的页面替换算法</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#fifo-map-swappable%EF%BC%9A%E6%A0%B9%E6%8D%AE%E8%A7%84%E5%88%99%E5%9C%A8%E5%A4%B4%E9%83%A8%E6%B7%BB%E5%8A%A0%E4%BA%86%E4%B8%80%E4%B8%8B"><span class="nav-number">1.0.0.2.0.1.</span> <span class="nav-text">_fifo_map_swappable：根据规则在头部添加了一下</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#fifo-swap-out-victim%EF%BC%9A%E5%88%A0%E9%99%A4%E5%B0%BE%E9%83%A8%E9%A1%B5%E9%9D%A2"><span class="nav-number">1.0.0.2.0.2.</span> <span class="nav-text">_fifo_swap_out_victim：删除尾部页面</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="dying"
+      src="/images/head.jpg">
+  <p class="site-author-name" itemprop="name">dying</p>
+  <div class="site-description" itemprop="description">想都是问题，做才是答案</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/QYZing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;QYZing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:2062656460@qq.com" title="E-Mail → mailto:2062656460@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">蒙ICP备2023000237号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dying</span>
+</div>
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/canvas_sphere.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'wFD2TJDXerlwQLJQOksbriCK-gzGzoHsz',
+      appKey     : 'ErOISFE8uucXKBtDq5EVrhh4',
+      placeholder: "输入你的评论",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '3' || 10,
+      visitor    : true,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : true,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

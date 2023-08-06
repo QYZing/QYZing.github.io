@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/earth.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/earth.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.dying.asia","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="ucore Lab5 用户进程管理练习0：填写已有实验本实验依赖实验1&#x2F;2&#x2F;3&#x2F;4。请把你做的实验1&#x2F;2&#x2F;3&#x2F;4的代码填入本实验中代码中有“LAB1”&#x2F;“LAB2”&#x2F;“LAB3”&#x2F;“LAB4”的注释相应部分。注意：为了能够正确执行lab5的测试应用程序，可能需对已完成的实验1&#x2F;2&#x2F;3&#x2F;4的代码进行进一步改进。 改进的alloc_proc函数12345678910111213141516171819">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ucore lab5">
+<meta property="og:url" content="https://www.dying.asia/2023/08/06/ucore%20Lab5%20%E7%94%A8%E6%88%B7%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/index.html">
+<meta property="og:site_name" content="dying Blog">
+<meta property="og:description" content="ucore Lab5 用户进程管理练习0：填写已有实验本实验依赖实验1&#x2F;2&#x2F;3&#x2F;4。请把你做的实验1&#x2F;2&#x2F;3&#x2F;4的代码填入本实验中代码中有“LAB1”&#x2F;“LAB2”&#x2F;“LAB3”&#x2F;“LAB4”的注释相应部分。注意：为了能够正确执行lab5的测试应用程序，可能需对已完成的实验1&#x2F;2&#x2F;3&#x2F;4的代码进行进一步改进。 改进的alloc_proc函数12345678910111213141516171819">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/029f795dd38344c08891ecb91bdf9096.png">
+<meta property="article:published_time" content="2023-08-06T07:45:00.000Z">
+<meta property="article:modified_time" content="2023-08-06T07:45:13.259Z">
+<meta property="article:author" content="dying">
+<meta property="article:tag" content="ucore">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/029f795dd38344c08891ecb91bdf9096.png">
+
+<link rel="canonical" href="https://www.dying.asia/2023/08/06/ucore%20Lab5%20%E7%94%A8%E6%88%B7%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>ucore lab5 | dying Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">dying Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>资源</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-guestbook">
+
+    <a href="/guestbook/" rel="section"><i class="fa fa-book fa-fw"></i>留言</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.dying.asia/2023/08/06/ucore%20Lab5%20%E7%94%A8%E6%88%B7%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/head.jpg">
+      <meta itemprop="name" content="dying">
+      <meta itemprop="description" content="想都是问题，做才是答案">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dying Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ucore lab5
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-08-06 15:45:00 / 修改时间：15:45:13" itemprop="dateCreated datePublished" datetime="2023-08-06T15:45:00+08:00">2023-08-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">操作系统</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2023/08/06/ucore%20Lab5%20%E7%94%A8%E6%88%B7%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/" class="post-meta-item leancloud_visitors" data-flag-title="ucore lab5" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2023/08/06/ucore%20Lab5%20%E7%94%A8%E6%88%B7%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2023/08/06/ucore%20Lab5%20%E7%94%A8%E6%88%B7%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="ucore-Lab5-用户进程管理"><a href="#ucore-Lab5-用户进程管理" class="headerlink" title="ucore Lab5 用户进程管理"></a>ucore Lab5 用户进程管理</h1><h4 id="练习0：填写已有实验"><a href="#练习0：填写已有实验" class="headerlink" title="练习0：填写已有实验"></a>练习0：填写已有实验</h4><p>本实验依赖实验1/2/3/4。请把你做的实验1/2/3/4的代码填入本实验中代码中有“LAB1”/“LAB2”/“LAB3”/“LAB4”的注释相应部分。注意：为了能够正确执行lab5的测试应用程序，可能需对已完成的实验1/2/3/4的代码进行进一步改进。</p>
+<h6 id="改进的alloc-proc函数"><a href="#改进的alloc-proc函数" class="headerlink" title="改进的alloc_proc函数"></a>改进的alloc_proc函数</h6><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="keyword">struct</span> proc_struct *</span><br><span class="line"><span class="title function_">alloc_proc</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">proc_struct</span> *<span class="title">proc</span> =</span> kmalloc(<span class="keyword">sizeof</span>(<span class="keyword">struct</span> proc_struct));</span><br><span class="line">    <span class="keyword">if</span> (proc != <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        proc-&gt;state = PROC_UNINIT;</span><br><span class="line">        proc-&gt;pid = <span class="number">-1</span>;</span><br><span class="line">        proc-&gt;runs = <span class="number">0</span>;</span><br><span class="line">        proc-&gt;kstack = <span class="number">0</span>;</span><br><span class="line">        proc-&gt;need_resched = <span class="number">0</span>;</span><br><span class="line">        proc-&gt;parent = <span class="literal">NULL</span>;</span><br><span class="line">        proc-&gt;mm = <span class="literal">NULL</span>;</span><br><span class="line">        <span class="built_in">memset</span>(&amp;(proc-&gt;context), <span class="number">0</span>, <span class="keyword">sizeof</span>(<span class="keyword">struct</span> context));</span><br><span class="line">        proc-&gt;tf = <span class="literal">NULL</span>;</span><br><span class="line">        proc-&gt;cr3 = boot_cr3;</span><br><span class="line">        proc-&gt;flags = <span class="number">0</span>;</span><br><span class="line">        <span class="built_in">memset</span>(proc-&gt;name, <span class="number">0</span>, <span class="keyword">sizeof</span>(proc-&gt;name));</span><br><span class="line">        <span class="comment">//以下是增加条目</span></span><br><span class="line">        proc-&gt;wait_state = <span class="number">0</span>;</span><br><span class="line">        proc-&gt;cptr = proc-&gt;yptr = proc-&gt;optr = <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> proc;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h6 id="idt-init-在初始化IDT的时候，设置系统调用对应的中断描述符，使其能够在用户态下被调用，并且设置为trap类型。（事实上这个部分已经在LAB1的实验中顺手被完成了）"><a href="#idt-init-在初始化IDT的时候，设置系统调用对应的中断描述符，使其能够在用户态下被调用，并且设置为trap类型。（事实上这个部分已经在LAB1的实验中顺手被完成了）" class="headerlink" title="idt_init 在初始化IDT的时候，设置系统调用对应的中断描述符，使其能够在用户态下被调用，并且设置为trap类型。（事实上这个部分已经在LAB1的实验中顺手被完成了）"></a>idt_init 在初始化IDT的时候，设置系统调用对应的中断描述符，使其能够在用户态下被调用，并且设置为trap类型。（事实上这个部分已经在LAB1的实验中顺手被完成了）</h6><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">idt_init</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">extern</span> <span class="type">uintptr_t</span> __vectors[];</span><br><span class="line">    <span class="type">int</span> i;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="keyword">sizeof</span>(idt) / <span class="keyword">sizeof</span>(<span class="keyword">struct</span> gatedesc); i++)</span><br><span class="line">    &#123;</span><br><span class="line">        SETGATE(idt[i], <span class="number">0</span>, GD_KTEXT, __vectors[i], DPL_KERNEL);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 【注意】除了系统调用中断(T_SYSCALL)使用陷阱门描述符且权限为用户态权限以外</span></span><br><span class="line"><span class="comment">     * ，其它中断均使用特权级(DPL)为０的中断门描述符，权限为内核态权限；而ucore的</span></span><br><span class="line"><span class="comment">     * 应用程序处于特权级３，需要采用｀int 0x80`指令操作（这种方式称为软中断，软件</span></span><br><span class="line"><span class="comment">     * 中断，Tra中断，在lab5会碰到）来发出系统调用请求，并要能实现从特权级３到特权</span></span><br><span class="line"><span class="comment">     * 级０的转换，所以系统调用中断(T_SYSCALL)所对应的中断门描述符中的特权级（DPL）</span></span><br><span class="line"><span class="comment">     * 需要设置为３。【lab1给出的实验说明】</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    SETGATE(idt[T_SYSCALL], <span class="number">1</span>, GD_KTEXT, __vectors[T_SYSCALL], DPL_USER);</span><br><span class="line">    <span class="comment">// this is different than  answer</span></span><br><span class="line">    lidt(&amp;idt_pd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="trap-dispatch-struct-trapframe-tf-在时钟中断的处理部分，每过TICK-NUM个中断，就将当前的进程设置为可以被重新调度的，这样使得当前的线程可以被换出，从而实现多个线程的并发执行；"><a href="#trap-dispatch-struct-trapframe-tf-在时钟中断的处理部分，每过TICK-NUM个中断，就将当前的进程设置为可以被重新调度的，这样使得当前的线程可以被换出，从而实现多个线程的并发执行；" class="headerlink" title="trap_dispatch(struct trapframe *tf)  在时钟中断的处理部分，每过TICK_NUM个中断，就将当前的进程设置为可以被重新调度的，这样使得当前的线程可以被换出，从而实现多个线程的并发执行；"></a>trap_dispatch(struct trapframe *tf)  在时钟中断的处理部分，每过TICK_NUM个中断，就将当前的进程设置为可以被重新调度的，这样使得当前的线程可以被换出，从而实现多个线程的并发执行；</h6><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ticks++;</span><br><span class="line"><span class="keyword">if</span> (ticks % TICK_NUM == <span class="number">0</span>)</span><br><span class="line">&#123;</span><br><span class="line">    assert(current != <span class="literal">NULL</span>);</span><br><span class="line">    current-&gt;need_resched = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="在do-fork函数中，使用set-links函数来完成将fork的线程添加到线程链表中的过程，值得注意的是，该函数中就包括了对进程总数加1这一操作，因此需要将原先的这个操作给删除掉；"><a href="#在do-fork函数中，使用set-links函数来完成将fork的线程添加到线程链表中的过程，值得注意的是，该函数中就包括了对进程总数加1这一操作，因此需要将原先的这个操作给删除掉；" class="headerlink" title="在do_fork函数中，使用set_links函数来完成将fork的线程添加到线程链表中的过程，值得注意的是，该函数中就包括了对进程总数加1这一操作，因此需要将原先的这个操作给删除掉；"></a>在do_fork函数中，使用set_links函数来完成将fork的线程添加到线程链表中的过程，值得注意的是，该函数中就包括了对进程总数加1这一操作，因此需要将原先的这个操作给删除掉；</h6><p>下面只给出部分代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">do_fork</span><span class="params">(<span class="type">uint32_t</span> clone_flags, <span class="type">uintptr_t</span> <span class="built_in">stack</span>, <span class="keyword">struct</span> trapframe *tf)</span></span><br><span class="line">&#123;</span><br><span class="line"> ...</span><br><span class="line">	parent = current;<span class="comment">//设置parent</span></span><br><span class="line">    assert(current-&gt;wait_state == <span class="number">0</span>);<span class="comment">//检测是否为零</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (setup_kstack(proc) != <span class="number">0</span>)</span><br><span class="line">    &#123; <span class="comment">//    2. call setup_kstack to allocate a kernel stack for child process</span></span><br><span class="line">        <span class="keyword">goto</span> bad_fork_cleanup_proc;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (copy_mm(clone_flags, proc) != <span class="number">0</span>)</span><br><span class="line">    &#123; <span class="comment">//    3. call copy_mm to dup OR share mm according clone_flag</span></span><br><span class="line">        <span class="keyword">goto</span> bad_fork_cleanup_kstack;</span><br><span class="line">    &#125;</span><br><span class="line">    copy_thread(proc, <span class="built_in">stack</span>, tf); <span class="comment">//    4. call copy_thread to setup tf &amp; context in proc_struct</span></span><br><span class="line"></span><br><span class="line">    <span class="type">bool</span> intr_flag;</span><br><span class="line">    local_intr_save(intr_flag);</span><br><span class="line">    &#123;</span><br><span class="line">        proc-&gt;pid = get_pid();</span><br><span class="line">        hash_proc(proc);</span><br><span class="line">        set_links(proc);<span class="comment">//已经对nr_process增加了</span></span><br><span class="line">        <span class="comment">// list_add(&amp;proc_list, &amp;proc-&gt;list_link); //    5. insert proc_struct into hash_list &amp;&amp; proc_list</span></span><br><span class="line">        <span class="comment">// nr_process++;</span></span><br><span class="line">    &#125;</span><br><span class="line">...</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h6 id="简要描述一下进程创建过程："><a href="#简要描述一下进程创建过程：" class="headerlink" title="简要描述一下进程创建过程："></a>简要描述一下进程创建过程：</h6><p>1  程序进入kern_init开始执行</p>
+<p>2     proc_init();      在调用该函数时创建了俩个内核线程</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">proc_init</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line"><span class="comment">//为idleproc分配内存</span></span><br><span class="line">    <span class="title function_">if</span> <span class="params">((idleproc = alloc_proc()) == <span class="literal">NULL</span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        panic(<span class="string">&quot;cannot alloc idleproc.\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//设置idleproc内核线程信息</span></span><br><span class="line">...</span><br><span class="line">    current = idleproc; <span class="comment">//设置当前为idleproc</span></span><br><span class="line">...</span><br><span class="line">    <span class="comment">//又创建了另一个内核线程，其中(init_main 是该线程的执行流)</span></span><br><span class="line">    <span class="type">int</span> pid = kernel_thread(init_main, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line">...</span><br><span class="line">    set_proc_name(initproc, <span class="string">&quot;init&quot;</span>);</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>3 查看 init_main 发现init线程只是创建了个子线程，然后就进入循环调度</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">init_main(<span class="type">void</span> *arg)</span><br><span class="line">...</span><br><span class="line">    <span class="type">int</span> pid = kernel_thread(user_main, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (pid &lt;= <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        panic(<span class="string">&quot;create user_main failed.\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (do_wait(<span class="number">0</span>, <span class="literal">NULL</span>) == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        schedule();</span><br><span class="line">    &#125;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>4  查看user_main发现调用了KERNEL_EXECVE宏</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span></span><br><span class="line"><span class="title function_">user_main</span><span class="params">(<span class="type">void</span> *arg)</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> TEST</span></span><br><span class="line">    KERNEL_EXECVE2(TEST, TESTSTART, TESTSIZE);</span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">    KERNEL_EXECVE(<span class="built_in">exit</span>);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">    panic(<span class="string">&quot;user_main execve failed.\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>5 查看该宏最终调用kernel_execve创建进程</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> __KERNEL_EXECVE(name, binary, size) (&#123;           \</span></span><br><span class="line"><span class="meta">    cprintf(<span class="string">&quot;kernel_execve: pid = %d, name = \&quot;%s\&quot;.\n&quot;</span>, \</span></span><br><span class="line"><span class="meta">            current-&gt;pid, name);                         \</span></span><br><span class="line"><span class="meta">    kernel_execve(name, binary, (size_t)(size));         \</span></span><br><span class="line"><span class="meta">&#125;)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> KERNEL_EXECVE(x) (&#123;                                    \</span></span><br><span class="line"><span class="meta">    extern unsigned char _binary_obj___user_##x##_out_start[], \</span></span><br><span class="line"><span class="meta">        _binary_obj___user_##x##_out_size[];                   \</span></span><br><span class="line"><span class="meta">    __KERNEL_EXECVE(#x, _binary_obj___user_##x##_out_start,    \</span></span><br><span class="line"><span class="meta">                    _binary_obj___user_##x##_out_size);        \</span></span><br><span class="line"><span class="meta">&#125;)</span></span><br></pre></td></tr></table></figure>
+
+<p>6 而kernel_execve执行的是系统调用</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">kernel_execve(<span class="type">const</span> <span class="type">char</span> *name, <span class="type">unsigned</span> <span class="type">char</span> *binary, <span class="type">size_t</span> size)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> ret, len = <span class="built_in">strlen</span>(name);</span><br><span class="line">    <span class="keyword">asm</span> <span class="title function_">volatile</span><span class="params">(</span></span><br><span class="line"><span class="params">        <span class="string">&quot;int %1;&quot;</span></span></span><br><span class="line"><span class="params">        : <span class="string">&quot;=a&quot;</span>(ret)<span class="comment">//执行SYS_exec系统调用</span></span></span><br><span class="line"><span class="params">        : <span class="string">&quot;i&quot;</span>(T_SYSCALL), <span class="string">&quot;0&quot;</span>(SYS_exec), <span class="string">&quot;d&quot;</span>(name), <span class="string">&quot;c&quot;</span>(len), <span class="string">&quot;b&quot;</span>(binary), <span class="string">&quot;D&quot;</span>(size)</span></span><br><span class="line"><span class="params">        : <span class="string">&quot;memory&quot;</span>)</span>;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;	</span><br></pre></td></tr></table></figure>
+
+<p>7 系统调用在syscall.c中给出，通过设置了个函数指针数组进行绑定系统调用与对应函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="title function_">int</span> <span class="params">(*syscalls[])</span><span class="params">(<span class="type">uint32_t</span> arg[])</span> = &#123;</span><br><span class="line">    [SYS_exit]              sys_exit,</span><br><span class="line">    [SYS_fork]              sys_fork,</span><br><span class="line">    [SYS_wait]              sys_wait,</span><br><span class="line">    [SYS_exec]              sys_exec,</span><br><span class="line">    [SYS_yield]             sys_yield,</span><br><span class="line">    [SYS_kill]              sys_kill,</span><br><span class="line">    [SYS_getpid]            sys_getpid,</span><br><span class="line">    [SYS_putc]              sys_putc,</span><br><span class="line">    [SYS_pgdir]             sys_pgdir,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="type">void</span></span><br><span class="line"><span class="title function_">syscall</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">trapframe</span> *<span class="title">tf</span> =</span> current-&gt;tf;</span><br><span class="line">    <span class="type">uint32_t</span> arg[<span class="number">5</span>];</span><br><span class="line">    <span class="type">int</span> num = tf-&gt;tf_regs.reg_eax;</span><br><span class="line">    <span class="keyword">if</span> (num &gt;= <span class="number">0</span> &amp;&amp; num &lt; NUM_SYSCALLS) &#123;</span><br><span class="line">        <span class="keyword">if</span> (syscalls[num] != <span class="literal">NULL</span>) &#123;</span><br><span class="line">            arg[<span class="number">0</span>] = tf-&gt;tf_regs.reg_edx;</span><br><span class="line">            arg[<span class="number">1</span>] = tf-&gt;tf_regs.reg_ecx;</span><br><span class="line">            arg[<span class="number">2</span>] = tf-&gt;tf_regs.reg_ebx;</span><br><span class="line">            arg[<span class="number">3</span>] = tf-&gt;tf_regs.reg_edi;</span><br><span class="line">            arg[<span class="number">4</span>] = tf-&gt;tf_regs.reg_esi;</span><br><span class="line">            tf-&gt;tf_regs.reg_eax = syscalls[num](arg);</span><br><span class="line">            <span class="keyword">return</span> ;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    print_trapframe(tf);</span><br><span class="line">    panic(<span class="string">&quot;undefined syscall %d, pid = %d, name = %s.\n&quot;</span>,</span><br><span class="line">            num, current-&gt;pid, current-&gt;name);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="练习1-加载应用程序并执行（需要编码）"><a href="#练习1-加载应用程序并执行（需要编码）" class="headerlink" title="练习1: 加载应用程序并执行（需要编码）"></a>练习1: 加载应用程序并执行（需要编码）</h4><h6 id="load-icode"><a href="#load-icode" class="headerlink" title="load_icode"></a>load_icode</h6><p>由于最终是在用户态下运行的，所以需要将段寄存器初始化为用户态的代码段、数据段、堆栈段；</p>
+<p>esp应当指向先前的步骤中创建的用户栈的栈顶；</p>
+<p>eip应当指向ELF可执行文件加载到内存之后的入口处；</p>
+<p>eflags中应当初始化为中断使能，注意eflags的第1位是恒为1的；</p>
+<p>设置ret为0，表示正常返回；</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tf-&gt;tf_cs = USER_CS;</span><br><span class="line">tf-&gt;tf_ds = tf-&gt;tf_es = tf-&gt;tf_ss =  USER_DS;</span><br><span class="line">tf-&gt;tf_esp = USTACKTOP;</span><br><span class="line">tf-&gt;tf_eip = elf-&gt;e_entry;</span><br><span class="line">tf-&gt;tf_eflags = FL_IF |<span class="number">0x00000002</span>;<span class="comment">//参考AmadeusChan 不加 |0x00000002 make grade有点问题</span></span><br><span class="line">ret = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="练习2-父进程复制自己的内存空间给子进程（需要编码）"><a href="#练习2-父进程复制自己的内存空间给子进程（需要编码）" class="headerlink" title="练习2: 父进程复制自己的内存空间给子进程（需要编码）"></a>练习2: 父进程复制自己的内存空间给子进程（需要编码）</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">copy_range</span><span class="params">(<span class="type">pde_t</span> *to, <span class="type">pde_t</span> *from, <span class="type">uintptr_t</span> start, <span class="type">uintptr_t</span> end, <span class="type">bool</span> share)</span></span><br><span class="line">&#123;</span><br><span class="line">    assert(start % PGSIZE == <span class="number">0</span> &amp;&amp; end % PGSIZE == <span class="number">0</span>);</span><br><span class="line">    assert(USER_ACCESS(start, end));</span><br><span class="line">    <span class="comment">// copy content by page unit.</span></span><br><span class="line">    <span class="keyword">do</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// call get_pte to find process A&#x27;s pte according to the addr start</span></span><br><span class="line">        <span class="type">pte_t</span> *ptep = get_pte(from, start, <span class="number">0</span>), *nptep;</span><br><span class="line">        <span class="keyword">if</span> (ptep == <span class="literal">NULL</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            start = ROUNDDOWN(start + PTSIZE, PTSIZE);</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// call get_pte to find process B&#x27;s pte according to the addr start. If pte is NULL, just alloc a PT</span></span><br><span class="line">        <span class="keyword">if</span> (*ptep &amp; PTE_P)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> ((nptep = get_pte(to, start, <span class="number">1</span>)) == <span class="literal">NULL</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">return</span> -E_NO_MEM;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="type">uint32_t</span> perm = (*ptep &amp; PTE_USER);</span><br><span class="line">            <span class="comment">// get page from ptep</span></span><br><span class="line">            <span class="class"><span class="keyword">struct</span> <span class="title">Page</span> *<span class="title">page</span> =</span> pte2page(*ptep);</span><br><span class="line">            <span class="comment">// alloc a page for process B</span></span><br><span class="line">            <span class="class"><span class="keyword">struct</span> <span class="title">Page</span> *<span class="title">npage</span> =</span> alloc_page();</span><br><span class="line">            assert(page != <span class="literal">NULL</span>);</span><br><span class="line">            assert(npage != <span class="literal">NULL</span>);</span><br><span class="line">            <span class="type">int</span> ret = <span class="number">0</span>;</span><br><span class="line">            <span class="comment">/* </span></span><br><span class="line"><span class="comment">             * (1) find src_kvaddr: the kernel virtual address of page</span></span><br><span class="line"><span class="comment">             * (2) find dst_kvaddr: the kernel virtual address of npage</span></span><br><span class="line"><span class="comment">             * (3) memory copy from src_kvaddr to dst_kvaddr, size is PGSIZE</span></span><br><span class="line"><span class="comment">             * (4) build the map of phy addr of  nage with the linear addr start</span></span><br><span class="line"><span class="comment">             */</span></span><br><span class="line">            <span class="type">uintptr_t</span> *dst_kvaddr = page2kva(npage);</span><br><span class="line">            <span class="type">uintptr_t</span> *src_kvaddr = page2kva(page);</span><br><span class="line">            <span class="built_in">memcpy</span>(dst_kvaddr, src_kvaddr, PGSIZE);</span><br><span class="line">            ret = page_insert(to, npage, start, perm);</span><br><span class="line">            assert(ret == <span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        start += PGSIZE;</span><br><span class="line">    &#125; <span class="keyword">while</span> (start != <span class="number">0</span> &amp;&amp; start &lt; end);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>copy_range函数就是调用一个<code>memcpy</code>将父进程的内存直接复制给子进程即可。</p>
+<h4 id="练习3-阅读分析源代码，理解进程执行-fork-exec-wait-exit-的实现，以及系统调用的实现（不需要编码）"><a href="#练习3-阅读分析源代码，理解进程执行-fork-exec-wait-exit-的实现，以及系统调用的实现（不需要编码）" class="headerlink" title="练习3: 阅读分析源代码，理解进程执行 fork/exec/wait/exit 的实现，以及系统调用的实现（不需要编码）"></a>练习3: 阅读分析源代码，理解进程执行 fork/exec/wait/exit 的实现，以及系统调用的实现（不需要编码）</h4><h6 id="请分析fork-exec-wait-exit在实现中是如何影响进程的执行状态的？"><a href="#请分析fork-exec-wait-exit在实现中是如何影响进程的执行状态的？" class="headerlink" title="请分析fork/exec/wait/exit在实现中是如何影响进程的执行状态的？"></a>请分析fork/exec/wait/exit在实现中是如何影响进程的执行状态的？</h6><pre><code>系统调用分析如上
+</code></pre>
+<p>运行截图<br><img src="https://img-blog.csdnimg.cn/029f795dd38344c08891ecb91bdf9096.png" alt="在这里插入图片描述"></p>
+
+    </div>
+
+    
+    
+    
+
+      
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+      
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ucore/" rel="tag"># ucore</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/08/06/ucore%20lab3%20%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" rel="prev" title="ucore lab3">
+      <i class="fa fa-chevron-left"></i> ucore lab3
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/08/06/ucore%20%20Lab8%20%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="next" title="ucore lab8">
+      ucore lab8 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ucore-Lab5-%E7%94%A8%E6%88%B7%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">ucore Lab5 用户进程管理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%83%E4%B9%A00%EF%BC%9A%E5%A1%AB%E5%86%99%E5%B7%B2%E6%9C%89%E5%AE%9E%E9%AA%8C"><span class="nav-number">1.0.0.1.</span> <span class="nav-text">练习0：填写已有实验</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E6%94%B9%E8%BF%9B%E7%9A%84alloc-proc%E5%87%BD%E6%95%B0"><span class="nav-number">1.0.0.1.0.1.</span> <span class="nav-text">改进的alloc_proc函数</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#idt-init-%E5%9C%A8%E5%88%9D%E5%A7%8B%E5%8C%96IDT%E7%9A%84%E6%97%B6%E5%80%99%EF%BC%8C%E8%AE%BE%E7%BD%AE%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E5%AF%B9%E5%BA%94%E7%9A%84%E4%B8%AD%E6%96%AD%E6%8F%8F%E8%BF%B0%E7%AC%A6%EF%BC%8C%E4%BD%BF%E5%85%B6%E8%83%BD%E5%A4%9F%E5%9C%A8%E7%94%A8%E6%88%B7%E6%80%81%E4%B8%8B%E8%A2%AB%E8%B0%83%E7%94%A8%EF%BC%8C%E5%B9%B6%E4%B8%94%E8%AE%BE%E7%BD%AE%E4%B8%BAtrap%E7%B1%BB%E5%9E%8B%E3%80%82%EF%BC%88%E4%BA%8B%E5%AE%9E%E4%B8%8A%E8%BF%99%E4%B8%AA%E9%83%A8%E5%88%86%E5%B7%B2%E7%BB%8F%E5%9C%A8LAB1%E7%9A%84%E5%AE%9E%E9%AA%8C%E4%B8%AD%E9%A1%BA%E6%89%8B%E8%A2%AB%E5%AE%8C%E6%88%90%E4%BA%86%EF%BC%89"><span class="nav-number">1.0.0.1.0.2.</span> <span class="nav-text">idt_init 在初始化IDT的时候，设置系统调用对应的中断描述符，使其能够在用户态下被调用，并且设置为trap类型。（事实上这个部分已经在LAB1的实验中顺手被完成了）</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#trap-dispatch-struct-trapframe-tf-%E5%9C%A8%E6%97%B6%E9%92%9F%E4%B8%AD%E6%96%AD%E7%9A%84%E5%A4%84%E7%90%86%E9%83%A8%E5%88%86%EF%BC%8C%E6%AF%8F%E8%BF%87TICK-NUM%E4%B8%AA%E4%B8%AD%E6%96%AD%EF%BC%8C%E5%B0%B1%E5%B0%86%E5%BD%93%E5%89%8D%E7%9A%84%E8%BF%9B%E7%A8%8B%E8%AE%BE%E7%BD%AE%E4%B8%BA%E5%8F%AF%E4%BB%A5%E8%A2%AB%E9%87%8D%E6%96%B0%E8%B0%83%E5%BA%A6%E7%9A%84%EF%BC%8C%E8%BF%99%E6%A0%B7%E4%BD%BF%E5%BE%97%E5%BD%93%E5%89%8D%E7%9A%84%E7%BA%BF%E7%A8%8B%E5%8F%AF%E4%BB%A5%E8%A2%AB%E6%8D%A2%E5%87%BA%EF%BC%8C%E4%BB%8E%E8%80%8C%E5%AE%9E%E7%8E%B0%E5%A4%9A%E4%B8%AA%E7%BA%BF%E7%A8%8B%E7%9A%84%E5%B9%B6%E5%8F%91%E6%89%A7%E8%A1%8C%EF%BC%9B"><span class="nav-number">1.0.0.1.0.3.</span> <span class="nav-text">trap_dispatch(struct trapframe *tf)  在时钟中断的处理部分，每过TICK_NUM个中断，就将当前的进程设置为可以被重新调度的，这样使得当前的线程可以被换出，从而实现多个线程的并发执行；</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E5%9C%A8do-fork%E5%87%BD%E6%95%B0%E4%B8%AD%EF%BC%8C%E4%BD%BF%E7%94%A8set-links%E5%87%BD%E6%95%B0%E6%9D%A5%E5%AE%8C%E6%88%90%E5%B0%86fork%E7%9A%84%E7%BA%BF%E7%A8%8B%E6%B7%BB%E5%8A%A0%E5%88%B0%E7%BA%BF%E7%A8%8B%E9%93%BE%E8%A1%A8%E4%B8%AD%E7%9A%84%E8%BF%87%E7%A8%8B%EF%BC%8C%E5%80%BC%E5%BE%97%E6%B3%A8%E6%84%8F%E7%9A%84%E6%98%AF%EF%BC%8C%E8%AF%A5%E5%87%BD%E6%95%B0%E4%B8%AD%E5%B0%B1%E5%8C%85%E6%8B%AC%E4%BA%86%E5%AF%B9%E8%BF%9B%E7%A8%8B%E6%80%BB%E6%95%B0%E5%8A%A01%E8%BF%99%E4%B8%80%E6%93%8D%E4%BD%9C%EF%BC%8C%E5%9B%A0%E6%AD%A4%E9%9C%80%E8%A6%81%E5%B0%86%E5%8E%9F%E5%85%88%E7%9A%84%E8%BF%99%E4%B8%AA%E6%93%8D%E4%BD%9C%E7%BB%99%E5%88%A0%E9%99%A4%E6%8E%89%EF%BC%9B"><span class="nav-number">1.0.0.1.0.4.</span> <span class="nav-text">在do_fork函数中，使用set_links函数来完成将fork的线程添加到线程链表中的过程，值得注意的是，该函数中就包括了对进程总数加1这一操作，因此需要将原先的这个操作给删除掉；</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%AE%80%E8%A6%81%E6%8F%8F%E8%BF%B0%E4%B8%80%E4%B8%8B%E8%BF%9B%E7%A8%8B%E5%88%9B%E5%BB%BA%E8%BF%87%E7%A8%8B%EF%BC%9A"><span class="nav-number">1.0.0.1.0.5.</span> <span class="nav-text">简要描述一下进程创建过程：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%83%E4%B9%A01-%E5%8A%A0%E8%BD%BD%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E5%B9%B6%E6%89%A7%E8%A1%8C%EF%BC%88%E9%9C%80%E8%A6%81%E7%BC%96%E7%A0%81%EF%BC%89"><span class="nav-number">1.0.0.2.</span> <span class="nav-text">练习1: 加载应用程序并执行（需要编码）</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#load-icode"><span class="nav-number">1.0.0.2.0.1.</span> <span class="nav-text">load_icode</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%83%E4%B9%A02-%E7%88%B6%E8%BF%9B%E7%A8%8B%E5%A4%8D%E5%88%B6%E8%87%AA%E5%B7%B1%E7%9A%84%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4%E7%BB%99%E5%AD%90%E8%BF%9B%E7%A8%8B%EF%BC%88%E9%9C%80%E8%A6%81%E7%BC%96%E7%A0%81%EF%BC%89"><span class="nav-number">1.0.0.3.</span> <span class="nav-text">练习2: 父进程复制自己的内存空间给子进程（需要编码）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%83%E4%B9%A03-%E9%98%85%E8%AF%BB%E5%88%86%E6%9E%90%E6%BA%90%E4%BB%A3%E7%A0%81%EF%BC%8C%E7%90%86%E8%A7%A3%E8%BF%9B%E7%A8%8B%E6%89%A7%E8%A1%8C-fork-exec-wait-exit-%E7%9A%84%E5%AE%9E%E7%8E%B0%EF%BC%8C%E4%BB%A5%E5%8F%8A%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E7%9A%84%E5%AE%9E%E7%8E%B0%EF%BC%88%E4%B8%8D%E9%9C%80%E8%A6%81%E7%BC%96%E7%A0%81%EF%BC%89"><span class="nav-number">1.0.0.4.</span> <span class="nav-text">练习3: 阅读分析源代码，理解进程执行 fork&#x2F;exec&#x2F;wait&#x2F;exit 的实现，以及系统调用的实现（不需要编码）</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E8%AF%B7%E5%88%86%E6%9E%90fork-exec-wait-exit%E5%9C%A8%E5%AE%9E%E7%8E%B0%E4%B8%AD%E6%98%AF%E5%A6%82%E4%BD%95%E5%BD%B1%E5%93%8D%E8%BF%9B%E7%A8%8B%E7%9A%84%E6%89%A7%E8%A1%8C%E7%8A%B6%E6%80%81%E7%9A%84%EF%BC%9F"><span class="nav-number">1.0.0.4.0.1.</span> <span class="nav-text">请分析fork&#x2F;exec&#x2F;wait&#x2F;exit在实现中是如何影响进程的执行状态的？</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="dying"
+      src="/images/head.jpg">
+  <p class="site-author-name" itemprop="name">dying</p>
+  <div class="site-description" itemprop="description">想都是问题，做才是答案</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/QYZing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;QYZing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:2062656460@qq.com" title="E-Mail → mailto:2062656460@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">蒙ICP备2023000237号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dying</span>
+</div>
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/canvas_sphere.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'wFD2TJDXerlwQLJQOksbriCK-gzGzoHsz',
+      appKey     : 'ErOISFE8uucXKBtDq5EVrhh4',
+      placeholder: "输入你的评论",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '3' || 10,
+      visitor    : true,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : true,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

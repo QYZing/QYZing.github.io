@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/earth.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/earth.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.dying.asia","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="ucore lab1练习1：理解通过make生成执行文件的过程。（要求在报告中写出对下述问题的回答）1 .操作系统镜像文件ucore.img是如何一步一步生成的？(需要比较详细地解释Makefile中每一条相关命令和命令参数的含义，以及说明命令导致的结果)首先查看ucore.img生成规则，发现ucore.img生成依赖于kernel和bootblock123456789# create ucor">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ucore lab1">
+<meta property="og:url" content="https://www.dying.asia/2023/08/06/ucore%20lab1/index.html">
+<meta property="og:site_name" content="dying Blog">
+<meta property="og:description" content="ucore lab1练习1：理解通过make生成执行文件的过程。（要求在报告中写出对下述问题的回答）1 .操作系统镜像文件ucore.img是如何一步一步生成的？(需要比较详细地解释Makefile中每一条相关命令和命令参数的含义，以及说明命令导致的结果)首先查看ucore.img生成规则，发现ucore.img生成依赖于kernel和bootblock123456789# create ucor">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-08-06T07:44:00.000Z">
+<meta property="article:modified_time" content="2023-08-06T07:44:39.005Z">
+<meta property="article:author" content="dying">
+<meta property="article:tag" content="ucore">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://www.dying.asia/2023/08/06/ucore%20lab1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>ucore lab1 | dying Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">dying Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>资源</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-guestbook">
+
+    <a href="/guestbook/" rel="section"><i class="fa fa-book fa-fw"></i>留言</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.dying.asia/2023/08/06/ucore%20lab1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/head.jpg">
+      <meta itemprop="name" content="dying">
+      <meta itemprop="description" content="想都是问题，做才是答案">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dying Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ucore lab1
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-08-06 15:44:00 / 修改时间：15:44:39" itemprop="dateCreated datePublished" datetime="2023-08-06T15:44:00+08:00">2023-08-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">操作系统</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2023/08/06/ucore%20lab1/" class="post-meta-item leancloud_visitors" data-flag-title="ucore lab1" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2023/08/06/ucore%20lab1/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2023/08/06/ucore%20lab1/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="ucore-lab1"><a href="#ucore-lab1" class="headerlink" title="ucore lab1"></a>ucore lab1</h1><h4 id="练习1：理解通过make生成执行文件的过程。（要求在报告中写出对下述问题的回答）"><a href="#练习1：理解通过make生成执行文件的过程。（要求在报告中写出对下述问题的回答）" class="headerlink" title="练习1：理解通过make生成执行文件的过程。（要求在报告中写出对下述问题的回答）"></a>练习1：理解通过make生成执行文件的过程。（要求在报告中写出对下述问题的回答）</h4><h5 id="1-操作系统镜像文件ucore-img是如何一步一步生成的？-需要比较详细地解释Makefile中每一条相关命令和命令参数的含义，以及说明命令导致的结果"><a href="#1-操作系统镜像文件ucore-img是如何一步一步生成的？-需要比较详细地解释Makefile中每一条相关命令和命令参数的含义，以及说明命令导致的结果" class="headerlink" title="1 .操作系统镜像文件ucore.img是如何一步一步生成的？(需要比较详细地解释Makefile中每一条相关命令和命令参数的含义，以及说明命令导致的结果)"></a>1 .操作系统镜像文件ucore.img是如何一步一步生成的？(需要比较详细地解释Makefile中每一条相关命令和命令参数的含义，以及说明命令导致的结果)</h5><h6 id="首先查看ucore-img生成规则，发现ucore-img生成依赖于kernel和bootblock"><a href="#首先查看ucore-img生成规则，发现ucore-img生成依赖于kernel和bootblock" class="headerlink" title="首先查看ucore.img生成规则，发现ucore.img生成依赖于kernel和bootblock"></a>首先查看ucore.img生成规则，发现ucore.img生成依赖于kernel和bootblock</h6><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># create ucore.img</span></span><br><span class="line">UCOREIMG	:= <span class="variable">$(<span class="built_in">call</span> totarget,ucore.img)</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$(UCOREIMG)</span>: <span class="variable">$(kernel)</span> <span class="variable">$(bootblock)</span></span><br><span class="line">	<span class="variable">$(V)</span>dd if=/dev/zero of=<span class="variable">$@</span> count=10000</span><br><span class="line">	<span class="variable">$(V)</span>dd if=<span class="variable">$(bootblock)</span> of=<span class="variable">$@</span> conv=notrunc</span><br><span class="line">	<span class="variable">$(V)</span>dd if=<span class="variable">$(kernel)</span> of=<span class="variable">$@</span> seek=1 conv=notrunc</span><br><span class="line"></span><br><span class="line"><span class="variable">$(<span class="built_in">call</span> create_target,ucore.img)</span></span><br></pre></td></tr></table></figure>
+
+<p>dd：用指定大小的块拷贝一个文件，并在拷贝的同时进行指定的转换。$@是输出文件名</p>
+<p>第一行dd：就是开辟一块存储区域大小为10000 * 512字节然后将/dev/zero （0）输入进去【初始化一块区域】</p>
+<p>第二行dd：读取bootblock（512字节）内容然后输出到$@ 转换格式为 notrunc(不截短输出文件) </p>
+<p>第三行dd：读取kernel内容然后输出到$@ 转换格式同上。 注意有偏移seek=1 偏移 1 * 512 位置</p>
+<p>有关dd命令可以查看<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/78414544">linux下的dd命令使用详解 - 知乎 (zhihu.com)</a></p>
+<p>说白了就是弄一块磁盘区域来把kernel和bootblock按照头512字节是bootblock然后其次是kernel放进去，在模拟的时候这个文件要放到指定磁盘位置，然后BLOS启动时会读取磁盘上该文件的内容，bootblock作为bootloader引导代码然后加载kernel了</p>
+<h6 id="其次查看kernel生成规则"><a href="#其次查看kernel生成规则" class="headerlink" title="其次查看kernel生成规则"></a>其次查看kernel生成规则</h6><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># create kernel target</span></span><br><span class="line">kernel = <span class="variable">$(<span class="built_in">call</span> totarget,kernel)</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$(kernel)</span>: tools/kernel.ld</span><br><span class="line"></span><br><span class="line"><span class="variable">$(kernel)</span>: <span class="variable">$(KOBJS)</span></span><br><span class="line">	@echo + ld <span class="variable">$@</span></span><br><span class="line">	<span class="variable">$(V)</span><span class="variable">$(LD)</span> <span class="variable">$(LDFLAGS)</span> -T tools/kernel.ld -o <span class="variable">$@</span> <span class="variable">$(KOBJS)</span></span><br><span class="line">	@<span class="variable">$(OBJDUMP)</span> -S <span class="variable">$@</span> &gt; <span class="variable">$(<span class="built_in">call</span> asmfile,kernel)</span></span><br><span class="line">	@<span class="variable">$(OBJDUMP)</span> -t <span class="variable">$@</span> | <span class="variable">$(SED)</span> &#x27;1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d&#x27; &gt; <span class="variable">$(<span class="built_in">call</span> symfile,kernel)</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$(<span class="built_in">call</span> create_target,kernel)</span></span><br></pre></td></tr></table></figure>
+
+<p>kernel赋值为”bin/kernel”</p>
+<p>执行toos/kernel.ld链接脚本</p>
+<p>编译kernel\下的所有.s和.c文件</p>
+<h6 id="然后看一下bootblock"><a href="#然后看一下bootblock" class="headerlink" title="然后看一下bootblock"></a>然后看一下bootblock</h6><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment"># create bootblock</span></span><br><span class="line">bootfiles = <span class="variable">$(<span class="built_in">call</span> listf_cc,boot)</span></span><br><span class="line"><span class="variable">$(<span class="built_in">foreach</span> f,<span class="variable">$(bootfiles)</span>,$(<span class="built_in">call</span> cc_compile,<span class="variable">$(f)</span>,<span class="variable">$(CC)</span>,<span class="variable">$(CFLAGS)</span> -Os -nostdinc)</span>)</span><br><span class="line"><span class="comment">#编译boot\下的所有C文件</span></span><br><span class="line"></span><br><span class="line">bootblock = <span class="variable">$(<span class="built_in">call</span> totarget,bootblock)</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$(bootblock)</span>: <span class="variable">$(<span class="built_in">call</span> toobj,<span class="variable">$(bootfiles)</span>)</span> | <span class="variable">$(<span class="built_in">call</span> totarget,sign)</span></span><br><span class="line">	@echo + ld <span class="variable">$@</span></span><br><span class="line">	<span class="variable">$(V)</span><span class="variable">$(LD)</span> <span class="variable">$(LDFLAGS)</span> -N -e start -Ttext 0x7C00 <span class="variable">$^</span> -o <span class="variable">$(<span class="built_in">call</span> toobj,bootblock)</span></span><br><span class="line">	@<span class="variable">$(OBJDUMP)</span> -S <span class="variable">$(<span class="built_in">call</span> objfile,bootblock)</span> &gt; <span class="variable">$(<span class="built_in">call</span> asmfile,bootblock)</span></span><br><span class="line">	@<span class="variable">$(OBJCOPY)</span> -S -O binary <span class="variable">$(<span class="built_in">call</span> objfile,bootblock)</span> <span class="variable">$(<span class="built_in">call</span> outfile,bootblock)</span></span><br><span class="line">	@<span class="variable">$(<span class="built_in">call</span> totarget,sign)</span> <span class="variable">$(<span class="built_in">call</span> outfile,bootblock)</span> <span class="variable">$(bootblock)</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$(<span class="built_in">call</span> create_target,bootblock)</span></span><br><span class="line"><span class="comment">#编译boot\下所有文件,并链接bootblock文件</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># create &#x27;sign&#x27; tools</span></span><br><span class="line"><span class="variable">$(<span class="built_in">call</span> add_files_host,tools/sign.c,sign,sign)</span></span><br><span class="line"><span class="variable">$(<span class="built_in">call</span> create_target_host,sign,sign)</span></span><br><span class="line"><span class="comment">#前面需要sign这个，这里就是编译,tools/sign.c并调用</span></span><br></pre></td></tr></table></figure>
+
+<p>发现前面都用到了$(call totarget,…) totarget定义在tools/function.mk</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">totarget = <span class="variable">$(<span class="built_in">addprefix</span> <span class="variable">$(BINDIR)</span><span class="variable">$(SLASH)</span>,$(1)</span>)</span><br><span class="line"><span class="comment">#BINDIR在别处定义为&quot;bin&quot;,slash定义为斜线&quot;/&quot;,$(1)指代输入参数</span></span><br><span class="line"><span class="comment">#所以totarget作用为给输入参数添加前缀&quot;bin/&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h5 id="2-一个被系统认为是符合规范的硬盘主引导扇区的特征是什么？"><a href="#2-一个被系统认为是符合规范的硬盘主引导扇区的特征是什么？" class="headerlink" title="2 一个被系统认为是符合规范的硬盘主引导扇区的特征是什么？"></a>2 一个被系统认为是符合规范的硬盘主引导扇区的特征是什么？</h5><p>阅读sign.c可知,大小小于512字节且以0X55AA结尾</p>
+<h4 id="练习3：分析bootloader进入保护模式的过程。"><a href="#练习3：分析bootloader进入保护模式的过程。" class="headerlink" title="练习3：分析bootloader进入保护模式的过程。"></a>练习3：分析bootloader进入保护模式的过程。</h4><h6 id="1-关闭中断，初始化寄存器为0"><a href="#1-关闭中断，初始化寄存器为0" class="headerlink" title="1 关闭中断，初始化寄存器为0"></a>1 关闭中断，初始化寄存器为0</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">cli                                             # Disable interrupts</span><br><span class="line">cld                                             # String operations increment</span><br><span class="line"></span><br><span class="line"># Set up the important data segment registers (DS, ES, SS).</span><br><span class="line">xorw %ax, %ax                                   # Segment number zero</span><br><span class="line">movw %ax, %ds                                   # -&gt; Data Segment</span><br><span class="line">movw %ax, %es                                   # -&gt; Extra Segment</span><br><span class="line">movw %ax, %ss                                   # -&gt; Stack Segment</span><br></pre></td></tr></table></figure>
+
+<h6 id="2-开启A20"><a href="#2-开启A20" class="headerlink" title="2 开启A20:"></a>2 开启A20:</h6><p>​    为了兼容早期版本初始化时物理地址只能寻址20位也就是1M，所以要开启A20这样物理寻址就能达到32位也就是4G</p>
+<h6 id="3-同时载入全局描述表"><a href="#3-同时载入全局描述表" class="headerlink" title="3 同时载入全局描述表"></a>3 同时载入全局描述表</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lgdt gdtdesc</span><br></pre></td></tr></table></figure>
+
+<h6 id="4-进入保护模式，将cr0寄存器PE置1，开启保护模式"><a href="#4-进入保护模式，将cr0寄存器PE置1，开启保护模式" class="headerlink" title="4 进入保护模式，将cr0寄存器PE置1，开启保护模式"></a>4 进入保护模式，将cr0寄存器PE置1，开启保护模式</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">movl %cr0, %eax</span><br><span class="line">orl $CR0_PE_ON, %eax</span><br><span class="line">movl %eax, %cr0</span><br></pre></td></tr></table></figure>
+
+<h6 id="5-通过长跳转更新cs的基地址"><a href="#5-通过长跳转更新cs的基地址" class="headerlink" title="5 通过长跳转更新cs的基地址"></a>5 通过长跳转更新cs的基地址</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ljmp $PROT_MODE_CSEG, $protcseg</span><br></pre></td></tr></table></figure>
+
+<h6 id="6-设置段寄存器，建立堆栈"><a href="#6-设置段寄存器，建立堆栈" class="headerlink" title="6 设置段寄存器，建立堆栈"></a>6 设置段寄存器，建立堆栈</h6><h6 id="7-转到保护模式完成，call进入bootmain"><a href="#7-转到保护模式完成，call进入bootmain" class="headerlink" title="7 转到保护模式完成，call进入bootmain"></a>7 转到保护模式完成，call进入bootmain</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">call bootmain</span><br></pre></td></tr></table></figure>
+
+<h4 id="练习4：分析bootloader加载ELF格式的OS的过程。"><a href="#练习4：分析bootloader加载ELF格式的OS的过程。" class="headerlink" title="练习4：分析bootloader加载ELF格式的OS的过程。"></a>练习4：分析bootloader加载ELF格式的OS的过程。</h4><p>先从磁盘开始处读取了1页(8个扇区,每个512byte)的数据到内存64K处,再校验头部标识符是否合法.<br>接着从磁盘中读取每个程序段,并放到虚拟内存对应位置.<br>最后执行ELF入口程序,将控制权交给kernel</p>
+<h4 id="练习5：实现函数调用堆栈跟踪函数-（需要编程）"><a href="#练习5：实现函数调用堆栈跟踪函数-（需要编程）" class="headerlink" title="练习5：实现函数调用堆栈跟踪函数 （需要编程）"></a>练习5：实现函数调用堆栈跟踪函数 （需要编程）</h4><p>考察的是对EBP寄存器的运用.几乎所有本地编译器都会在每个函数体之前插入类似如下的汇编指令:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pushl %ebp</span><br><span class="line">movl %esp,%ebp</span><br></pre></td></tr></table></figure>
+
+<p>这两条汇编指令的含义是：首先将ebp寄存器入栈，然后将栈顶指针esp赋值给ebp。“mov ebp esp”这条指令表面上看是用esp覆盖ebp原来的值，其实不然。因为给ebp赋值之前，原ebp值已经被压栈（位于栈顶），而新的ebp又恰恰指向栈顶。此时ebp寄存器就已经处于一个非常重要的地位，该寄存器中存储着栈中的一个地址（原ebp入栈后的栈顶），从该地址为基准，向上（栈底方向）能获取返回地址、参数值，向下（栈顶方向）能获取函数局部变量值，而该地址处又存储着上一层函数调用时的ebp值。</p>
+<p>一般而言，ss:[ebp+4]处为返回地址，ss:[ebp+8]处为第一个参数值（最后一个入栈的参数值，此处假设其占用4字节内存），ss:[ebp-4]处为第一个局部变量，ss:[ebp]处为上一层ebp值。由于ebp中的地址处总是“上一层函数调用时的ebp值”，而在每一层函数调用中，都能通过当时的ebp值“向上（栈底方向）”能获取返回地址、参数值，“向下（栈顶方向）”能获取函数局部变量值。如此形成递归，直至到达栈底。这就是函数调用栈。</p>
+<p>由文档给出的不难理解，双层循环内层循环复则打印，外层循环复则查看堆栈调用，关键代码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">eip = ((<span class="type">uint32_t</span> *)ebp)[<span class="number">1</span>];</span><br><span class="line">ebp = ((<span class="type">uint32_t</span> *)ebp)[<span class="number">0</span>];</span><br></pre></td></tr></table></figure>
+
+<h4 id="练习6：完善中断初始化和处理"><a href="#练习6：完善中断初始化和处理" class="headerlink" title="练习6：完善中断初始化和处理"></a>练习6：完善中断初始化和处理</h4><h5 id="1-中断描述符表（也可简称为保护模式下的中断向量表）中一个表项占多少字节？其中哪几位代表中断处理代码的入口？"><a href="#1-中断描述符表（也可简称为保护模式下的中断向量表）中一个表项占多少字节？其中哪几位代表中断处理代码的入口？" class="headerlink" title="1 中断描述符表（也可简称为保护模式下的中断向量表）中一个表项占多少字节？其中哪几位代表中断处理代码的入口？"></a>1 中断描述符表（也可简称为保护模式下的中断向量表）中一个表项占多少字节？其中哪几位代表中断处理代码的入口？</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Gate descriptors for interrupts and traps */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">gatedesc</span> &#123;</span></span><br><span class="line">    <span class="type">unsigned</span> gd_off_15_0 : <span class="number">16</span>;        <span class="comment">// low 16 bits of offset in segment</span></span><br><span class="line">    <span class="type">unsigned</span> gd_ss : <span class="number">16</span>;            <span class="comment">// segment selector</span></span><br><span class="line">    <span class="type">unsigned</span> gd_args : <span class="number">5</span>;            <span class="comment">// # args, 0 for interrupt/trap gates</span></span><br><span class="line">    <span class="type">unsigned</span> gd_rsv1 : <span class="number">3</span>;            <span class="comment">// reserved(should be zero I guess)</span></span><br><span class="line">    <span class="type">unsigned</span> gd_type : <span class="number">4</span>;            <span class="comment">// type(STS_&#123;TG,IG32,TG32&#125;)</span></span><br><span class="line">    <span class="type">unsigned</span> gd_s : <span class="number">1</span>;                <span class="comment">// must be 0 (system)</span></span><br><span class="line">    <span class="type">unsigned</span> gd_dpl : <span class="number">2</span>;            <span class="comment">// descriptor(meaning new) privilege level</span></span><br><span class="line">    <span class="type">unsigned</span> gd_p : <span class="number">1</span>;                <span class="comment">// Present</span></span><br><span class="line">    <span class="type">unsigned</span> gd_off_31_16 : <span class="number">16</span>;        <span class="comment">// high bits of offset in segment</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>可以看出一个表项为8字节（64位）其中0 ~ 15位和48 ~ 63位分别为偏移量的低16位和高16位，两者拼接为偏移量，16~31位为段选择器。通过段选择子去GDT中找到对应的基地址，然后基地址加上偏移量就是中断处理程序的地址。</p>
+<h5 id="2-请编程完善kern-trap-trap-c中对中断向量表进行初始化的函数idt-init。在idt-init函数中，依次对所有中断入口进行初始化。使用mmu-h中的SETGATE宏，填充idt数组内容。每个中断的入口由tools-vectors-c生成，使用trap-c中声明的vectors数组即可"><a href="#2-请编程完善kern-trap-trap-c中对中断向量表进行初始化的函数idt-init。在idt-init函数中，依次对所有中断入口进行初始化。使用mmu-h中的SETGATE宏，填充idt数组内容。每个中断的入口由tools-vectors-c生成，使用trap-c中声明的vectors数组即可" class="headerlink" title="2 请编程完善kern/trap/trap.c中对中断向量表进行初始化的函数idt_init。在idt_init函数中，依次对所有中断入口进行初始化。使用mmu.h中的SETGATE宏，填充idt数组内容。每个中断的入口由tools/vectors.c生成，使用trap.c中声明的vectors数组即可"></a>2 请编程完善kern/trap/trap.c中对中断向量表进行初始化的函数idt_init。在idt_init函数中，依次对所有中断入口进行初始化。使用mmu.h中的SETGATE宏，填充idt数组内容。每个中断的入口由tools/vectors.c生成，使用trap.c中声明的vectors数组即可</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="type">uintptr_t</span> __vectors[];</span><br><span class="line"><span class="type">int</span> i ;</span><br><span class="line"><span class="keyword">for</span>( i = <span class="number">0</span>; i &lt; <span class="keyword">sizeof</span>(idt) / <span class="keyword">sizeof</span>(<span class="keyword">struct</span> gatedesc); i++ )&#123;</span><br><span class="line">    SETGATE(idt[i] , <span class="number">0</span> , GD_KTEXT , __vectors[i]  ,  DPL_KERNEL );</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 【注意】除了系统调用中断(T_SYSCALL)使用陷阱门描述符且权限为用户态权限以外</span></span><br><span class="line"><span class="comment"> * ，其它中断均使用特权级(DPL)为０的中断门描述符，权限为内核态权限；而ucore的</span></span><br><span class="line"><span class="comment"> * 应用程序处于特权级３，需要采用｀int 0x80`指令操作（这种方式称为软中断，软件</span></span><br><span class="line"><span class="comment"> * 中断，Tra中断，在lab5会碰到）来发出系统调用请求，并要能实现从特权级３到特权</span></span><br><span class="line"><span class="comment"> * 级０的转换，所以系统调用中断(T_SYSCALL)所对应的中断门描述符中的特权级（DPL）</span></span><br><span class="line"><span class="comment"> * 需要设置为３。</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">SETGATE(idt[T_SYSCALL] , <span class="number">1</span> , GD_KTEXT , __vectors[T_SYSCALL] , DPL_USER);</span><br><span class="line"><span class="comment">// this is different than  answer</span></span><br><span class="line">lidt(&amp;idt_pd);</span><br></pre></td></tr></table></figure>
+
+<p>就是找一些宏去填就行了，找宏很麻烦，其他还好</p>
+<h5 id="3-请编程完善trap-c中的中断处理函数trap，在对时钟中断进行处理的部分填写trap函数中处理时钟中断的部分，使操作系统每遇到100次时钟中断后，调用print-ticks子程序，向屏幕上打印一行文字”100-ticks”。"><a href="#3-请编程完善trap-c中的中断处理函数trap，在对时钟中断进行处理的部分填写trap函数中处理时钟中断的部分，使操作系统每遇到100次时钟中断后，调用print-ticks子程序，向屏幕上打印一行文字”100-ticks”。" class="headerlink" title="3 请编程完善trap.c中的中断处理函数trap，在对时钟中断进行处理的部分填写trap函数中处理时钟中断的部分，使操作系统每遇到100次时钟中断后，调用print_ticks子程序，向屏幕上打印一行文字”100 ticks”。"></a>3 请编程完善trap.c中的中断处理函数trap，在对时钟中断进行处理的部分填写trap函数中处理时钟中断的部分，使操作系统每遇到100次时钟中断后，调用print_ticks子程序，向屏幕上打印一行文字”100 ticks”。</h5><p> Too Simple? Yes, I think so!</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* LAB1 YOUR CODE : STEP 3 */</span></span><br><span class="line">  <span class="comment">/* handle the timer interrupt */</span></span><br><span class="line">  <span class="comment">/* (1) After a timer interrupt, you should record this event using a global variable (increase it), such as ticks in kern/driver/clock.c</span></span><br><span class="line"><span class="comment">   * (2) Every TICK_NUM cycle, you can print some info using a funciton, such as print_ticks().</span></span><br><span class="line"><span class="comment">   * (3) Too Simple? Yes, I think so!</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  ticks++;</span><br><span class="line">  <span class="keyword">if</span>(ticks % TICK_NUM  == <span class="number">0</span>)&#123;</span><br><span class="line">      print_ticks();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">break</span>;</span><br></pre></td></tr></table></figure>
+
+<h6 id="整体流程完成后就可以看到大约一秒会打印一个ticks，还能获取到键盘响应"><a href="#整体流程完成后就可以看到大约一秒会打印一个ticks，还能获取到键盘响应" class="headerlink" title="整体流程完成后就可以看到大约一秒会打印一个ticks，还能获取到键盘响应"></a>整体流程完成后就可以看到大约一秒会打印一个ticks，还能获取到键盘响应</h6>
+    </div>
+
+    
+    
+    
+
+      
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+      
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ucore/" rel="tag"># ucore</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/08/06/ucore%20lab2%20%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" rel="prev" title="ucore lab2">
+      <i class="fa fa-chevron-left"></i> ucore lab2
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/08/06/ucore%20lab7%20%E5%90%8C%E6%AD%A5%E4%BA%92%E6%96%A5/" rel="next" title="ucore lab7">
+      ucore lab7 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ucore-lab1"><span class="nav-number">1.</span> <span class="nav-text">ucore lab1</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%83%E4%B9%A01%EF%BC%9A%E7%90%86%E8%A7%A3%E9%80%9A%E8%BF%87make%E7%94%9F%E6%88%90%E6%89%A7%E8%A1%8C%E6%96%87%E4%BB%B6%E7%9A%84%E8%BF%87%E7%A8%8B%E3%80%82%EF%BC%88%E8%A6%81%E6%B1%82%E5%9C%A8%E6%8A%A5%E5%91%8A%E4%B8%AD%E5%86%99%E5%87%BA%E5%AF%B9%E4%B8%8B%E8%BF%B0%E9%97%AE%E9%A2%98%E7%9A%84%E5%9B%9E%E7%AD%94%EF%BC%89"><span class="nav-number">1.0.0.1.</span> <span class="nav-text">练习1：理解通过make生成执行文件的过程。（要求在报告中写出对下述问题的回答）</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%95%9C%E5%83%8F%E6%96%87%E4%BB%B6ucore-img%E6%98%AF%E5%A6%82%E4%BD%95%E4%B8%80%E6%AD%A5%E4%B8%80%E6%AD%A5%E7%94%9F%E6%88%90%E7%9A%84%EF%BC%9F-%E9%9C%80%E8%A6%81%E6%AF%94%E8%BE%83%E8%AF%A6%E7%BB%86%E5%9C%B0%E8%A7%A3%E9%87%8AMakefile%E4%B8%AD%E6%AF%8F%E4%B8%80%E6%9D%A1%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4%E5%92%8C%E5%91%BD%E4%BB%A4%E5%8F%82%E6%95%B0%E7%9A%84%E5%90%AB%E4%B9%89%EF%BC%8C%E4%BB%A5%E5%8F%8A%E8%AF%B4%E6%98%8E%E5%91%BD%E4%BB%A4%E5%AF%BC%E8%87%B4%E7%9A%84%E7%BB%93%E6%9E%9C"><span class="nav-number">1.0.0.1.1.</span> <span class="nav-text">1 .操作系统镜像文件ucore.img是如何一步一步生成的？(需要比较详细地解释Makefile中每一条相关命令和命令参数的含义，以及说明命令导致的结果)</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E9%A6%96%E5%85%88%E6%9F%A5%E7%9C%8Bucore-img%E7%94%9F%E6%88%90%E8%A7%84%E5%88%99%EF%BC%8C%E5%8F%91%E7%8E%B0ucore-img%E7%94%9F%E6%88%90%E4%BE%9D%E8%B5%96%E4%BA%8Ekernel%E5%92%8Cbootblock"><span class="nav-number">1.0.0.1.1.1.</span> <span class="nav-text">首先查看ucore.img生成规则，发现ucore.img生成依赖于kernel和bootblock</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E5%85%B6%E6%AC%A1%E6%9F%A5%E7%9C%8Bkernel%E7%94%9F%E6%88%90%E8%A7%84%E5%88%99"><span class="nav-number">1.0.0.1.1.2.</span> <span class="nav-text">其次查看kernel生成规则</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E7%84%B6%E5%90%8E%E7%9C%8B%E4%B8%80%E4%B8%8Bbootblock"><span class="nav-number">1.0.0.1.1.3.</span> <span class="nav-text">然后看一下bootblock</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-%E4%B8%80%E4%B8%AA%E8%A2%AB%E7%B3%BB%E7%BB%9F%E8%AE%A4%E4%B8%BA%E6%98%AF%E7%AC%A6%E5%90%88%E8%A7%84%E8%8C%83%E7%9A%84%E7%A1%AC%E7%9B%98%E4%B8%BB%E5%BC%95%E5%AF%BC%E6%89%87%E5%8C%BA%E7%9A%84%E7%89%B9%E5%BE%81%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">1.0.0.1.2.</span> <span class="nav-text">2 一个被系统认为是符合规范的硬盘主引导扇区的特征是什么？</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%83%E4%B9%A03%EF%BC%9A%E5%88%86%E6%9E%90bootloader%E8%BF%9B%E5%85%A5%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E7%9A%84%E8%BF%87%E7%A8%8B%E3%80%82"><span class="nav-number">1.0.0.2.</span> <span class="nav-text">练习3：分析bootloader进入保护模式的过程。</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#1-%E5%85%B3%E9%97%AD%E4%B8%AD%E6%96%AD%EF%BC%8C%E5%88%9D%E5%A7%8B%E5%8C%96%E5%AF%84%E5%AD%98%E5%99%A8%E4%B8%BA0"><span class="nav-number">1.0.0.2.0.1.</span> <span class="nav-text">1 关闭中断，初始化寄存器为0</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#2-%E5%BC%80%E5%90%AFA20"><span class="nav-number">1.0.0.2.0.2.</span> <span class="nav-text">2 开启A20:</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#3-%E5%90%8C%E6%97%B6%E8%BD%BD%E5%85%A5%E5%85%A8%E5%B1%80%E6%8F%8F%E8%BF%B0%E8%A1%A8"><span class="nav-number">1.0.0.2.0.3.</span> <span class="nav-text">3 同时载入全局描述表</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#4-%E8%BF%9B%E5%85%A5%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%EF%BC%8C%E5%B0%86cr0%E5%AF%84%E5%AD%98%E5%99%A8PE%E7%BD%AE1%EF%BC%8C%E5%BC%80%E5%90%AF%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.0.0.2.0.4.</span> <span class="nav-text">4 进入保护模式，将cr0寄存器PE置1，开启保护模式</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#5-%E9%80%9A%E8%BF%87%E9%95%BF%E8%B7%B3%E8%BD%AC%E6%9B%B4%E6%96%B0cs%E7%9A%84%E5%9F%BA%E5%9C%B0%E5%9D%80"><span class="nav-number">1.0.0.2.0.5.</span> <span class="nav-text">5 通过长跳转更新cs的基地址</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#6-%E8%AE%BE%E7%BD%AE%E6%AE%B5%E5%AF%84%E5%AD%98%E5%99%A8%EF%BC%8C%E5%BB%BA%E7%AB%8B%E5%A0%86%E6%A0%88"><span class="nav-number">1.0.0.2.0.6.</span> <span class="nav-text">6 设置段寄存器，建立堆栈</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#7-%E8%BD%AC%E5%88%B0%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E5%AE%8C%E6%88%90%EF%BC%8Ccall%E8%BF%9B%E5%85%A5bootmain"><span class="nav-number">1.0.0.2.0.7.</span> <span class="nav-text">7 转到保护模式完成，call进入bootmain</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%83%E4%B9%A04%EF%BC%9A%E5%88%86%E6%9E%90bootloader%E5%8A%A0%E8%BD%BDELF%E6%A0%BC%E5%BC%8F%E7%9A%84OS%E7%9A%84%E8%BF%87%E7%A8%8B%E3%80%82"><span class="nav-number">1.0.0.3.</span> <span class="nav-text">练习4：分析bootloader加载ELF格式的OS的过程。</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%83%E4%B9%A05%EF%BC%9A%E5%AE%9E%E7%8E%B0%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E5%A0%86%E6%A0%88%E8%B7%9F%E8%B8%AA%E5%87%BD%E6%95%B0-%EF%BC%88%E9%9C%80%E8%A6%81%E7%BC%96%E7%A8%8B%EF%BC%89"><span class="nav-number">1.0.0.4.</span> <span class="nav-text">练习5：实现函数调用堆栈跟踪函数 （需要编程）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%83%E4%B9%A06%EF%BC%9A%E5%AE%8C%E5%96%84%E4%B8%AD%E6%96%AD%E5%88%9D%E5%A7%8B%E5%8C%96%E5%92%8C%E5%A4%84%E7%90%86"><span class="nav-number">1.0.0.5.</span> <span class="nav-text">练习6：完善中断初始化和处理</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-%E4%B8%AD%E6%96%AD%E6%8F%8F%E8%BF%B0%E7%AC%A6%E8%A1%A8%EF%BC%88%E4%B9%9F%E5%8F%AF%E7%AE%80%E7%A7%B0%E4%B8%BA%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E4%B8%8B%E7%9A%84%E4%B8%AD%E6%96%AD%E5%90%91%E9%87%8F%E8%A1%A8%EF%BC%89%E4%B8%AD%E4%B8%80%E4%B8%AA%E8%A1%A8%E9%A1%B9%E5%8D%A0%E5%A4%9A%E5%B0%91%E5%AD%97%E8%8A%82%EF%BC%9F%E5%85%B6%E4%B8%AD%E5%93%AA%E5%87%A0%E4%BD%8D%E4%BB%A3%E8%A1%A8%E4%B8%AD%E6%96%AD%E5%A4%84%E7%90%86%E4%BB%A3%E7%A0%81%E7%9A%84%E5%85%A5%E5%8F%A3%EF%BC%9F"><span class="nav-number">1.0.0.5.1.</span> <span class="nav-text">1 中断描述符表（也可简称为保护模式下的中断向量表）中一个表项占多少字节？其中哪几位代表中断处理代码的入口？</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-%E8%AF%B7%E7%BC%96%E7%A8%8B%E5%AE%8C%E5%96%84kern-trap-trap-c%E4%B8%AD%E5%AF%B9%E4%B8%AD%E6%96%AD%E5%90%91%E9%87%8F%E8%A1%A8%E8%BF%9B%E8%A1%8C%E5%88%9D%E5%A7%8B%E5%8C%96%E7%9A%84%E5%87%BD%E6%95%B0idt-init%E3%80%82%E5%9C%A8idt-init%E5%87%BD%E6%95%B0%E4%B8%AD%EF%BC%8C%E4%BE%9D%E6%AC%A1%E5%AF%B9%E6%89%80%E6%9C%89%E4%B8%AD%E6%96%AD%E5%85%A5%E5%8F%A3%E8%BF%9B%E8%A1%8C%E5%88%9D%E5%A7%8B%E5%8C%96%E3%80%82%E4%BD%BF%E7%94%A8mmu-h%E4%B8%AD%E7%9A%84SETGATE%E5%AE%8F%EF%BC%8C%E5%A1%AB%E5%85%85idt%E6%95%B0%E7%BB%84%E5%86%85%E5%AE%B9%E3%80%82%E6%AF%8F%E4%B8%AA%E4%B8%AD%E6%96%AD%E7%9A%84%E5%85%A5%E5%8F%A3%E7%94%B1tools-vectors-c%E7%94%9F%E6%88%90%EF%BC%8C%E4%BD%BF%E7%94%A8trap-c%E4%B8%AD%E5%A3%B0%E6%98%8E%E7%9A%84vectors%E6%95%B0%E7%BB%84%E5%8D%B3%E5%8F%AF"><span class="nav-number">1.0.0.5.2.</span> <span class="nav-text">2 请编程完善kern&#x2F;trap&#x2F;trap.c中对中断向量表进行初始化的函数idt_init。在idt_init函数中，依次对所有中断入口进行初始化。使用mmu.h中的SETGATE宏，填充idt数组内容。每个中断的入口由tools&#x2F;vectors.c生成，使用trap.c中声明的vectors数组即可</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-%E8%AF%B7%E7%BC%96%E7%A8%8B%E5%AE%8C%E5%96%84trap-c%E4%B8%AD%E7%9A%84%E4%B8%AD%E6%96%AD%E5%A4%84%E7%90%86%E5%87%BD%E6%95%B0trap%EF%BC%8C%E5%9C%A8%E5%AF%B9%E6%97%B6%E9%92%9F%E4%B8%AD%E6%96%AD%E8%BF%9B%E8%A1%8C%E5%A4%84%E7%90%86%E7%9A%84%E9%83%A8%E5%88%86%E5%A1%AB%E5%86%99trap%E5%87%BD%E6%95%B0%E4%B8%AD%E5%A4%84%E7%90%86%E6%97%B6%E9%92%9F%E4%B8%AD%E6%96%AD%E7%9A%84%E9%83%A8%E5%88%86%EF%BC%8C%E4%BD%BF%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E6%AF%8F%E9%81%87%E5%88%B0100%E6%AC%A1%E6%97%B6%E9%92%9F%E4%B8%AD%E6%96%AD%E5%90%8E%EF%BC%8C%E8%B0%83%E7%94%A8print-ticks%E5%AD%90%E7%A8%8B%E5%BA%8F%EF%BC%8C%E5%90%91%E5%B1%8F%E5%B9%95%E4%B8%8A%E6%89%93%E5%8D%B0%E4%B8%80%E8%A1%8C%E6%96%87%E5%AD%97%E2%80%9D100-ticks%E2%80%9D%E3%80%82"><span class="nav-number">1.0.0.5.3.</span> <span class="nav-text">3 请编程完善trap.c中的中断处理函数trap，在对时钟中断进行处理的部分填写trap函数中处理时钟中断的部分，使操作系统每遇到100次时钟中断后，调用print_ticks子程序，向屏幕上打印一行文字”100 ticks”。</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B%E5%AE%8C%E6%88%90%E5%90%8E%E5%B0%B1%E5%8F%AF%E4%BB%A5%E7%9C%8B%E5%88%B0%E5%A4%A7%E7%BA%A6%E4%B8%80%E7%A7%92%E4%BC%9A%E6%89%93%E5%8D%B0%E4%B8%80%E4%B8%AAticks%EF%BC%8C%E8%BF%98%E8%83%BD%E8%8E%B7%E5%8F%96%E5%88%B0%E9%94%AE%E7%9B%98%E5%93%8D%E5%BA%94"><span class="nav-number">1.0.0.5.3.1.</span> <span class="nav-text">整体流程完成后就可以看到大约一秒会打印一个ticks，还能获取到键盘响应</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="dying"
+      src="/images/head.jpg">
+  <p class="site-author-name" itemprop="name">dying</p>
+  <div class="site-description" itemprop="description">想都是问题，做才是答案</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/QYZing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;QYZing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:2062656460@qq.com" title="E-Mail → mailto:2062656460@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">蒙ICP备2023000237号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dying</span>
+</div>
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/canvas_sphere.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'wFD2TJDXerlwQLJQOksbriCK-gzGzoHsz',
+      appKey     : 'ErOISFE8uucXKBtDq5EVrhh4',
+      placeholder: "输入你的评论",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '3' || 10,
+      visitor    : true,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : true,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

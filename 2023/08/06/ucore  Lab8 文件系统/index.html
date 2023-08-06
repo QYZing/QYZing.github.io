@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/earth.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/earth.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.dying.asia","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="ucore  Lab8 文件系统练习0：填写已有实验本实验依赖实验1&#x2F;2&#x2F;3&#x2F;4&#x2F;5&#x2F;6&#x2F;7。请把你做的实验1&#x2F;2&#x2F;3&#x2F;4&#x2F;5&#x2F;6&#x2F;7的代码填入本实验中代码中有“LAB1”&#x2F;“LAB2”&#x2F;“LAB3”&#x2F;“LAB4”&#x2F;“LAB5”&#x2F;“LAB6” &#x2F;“LAB7”的注释相应部分。并确保编译通过。注意：为了能够正确执行lab8的测试应用程序，可能需对已完成的实验1&#x2F;2&#x2F;3&#x2F;4&#x2F;5&#x2F;6&#x2F;7的代码进行进一步改">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ucore lab8">
+<meta property="og:url" content="https://www.dying.asia/2023/08/06/ucore%20%20Lab8%20%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/index.html">
+<meta property="og:site_name" content="dying Blog">
+<meta property="og:description" content="ucore  Lab8 文件系统练习0：填写已有实验本实验依赖实验1&#x2F;2&#x2F;3&#x2F;4&#x2F;5&#x2F;6&#x2F;7。请把你做的实验1&#x2F;2&#x2F;3&#x2F;4&#x2F;5&#x2F;6&#x2F;7的代码填入本实验中代码中有“LAB1”&#x2F;“LAB2”&#x2F;“LAB3”&#x2F;“LAB4”&#x2F;“LAB5”&#x2F;“LAB6” &#x2F;“LAB7”的注释相应部分。并确保编译通过。注意：为了能够正确执行lab8的测试应用程序，可能需对已完成的实验1&#x2F;2&#x2F;3&#x2F;4&#x2F;5&#x2F;6&#x2F;7的代码进行进一步改">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-08-06T07:45:00.000Z">
+<meta property="article:modified_time" content="2023-08-06T07:45:31.658Z">
+<meta property="article:author" content="dying">
+<meta property="article:tag" content="ucore">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://www.dying.asia/2023/08/06/ucore%20%20Lab8%20%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>ucore lab8 | dying Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">dying Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>资源</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-guestbook">
+
+    <a href="/guestbook/" rel="section"><i class="fa fa-book fa-fw"></i>留言</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.dying.asia/2023/08/06/ucore%20%20Lab8%20%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/head.jpg">
+      <meta itemprop="name" content="dying">
+      <meta itemprop="description" content="想都是问题，做才是答案">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dying Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ucore lab8
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-08-06 15:45:00 / 修改时间：15:45:31" itemprop="dateCreated datePublished" datetime="2023-08-06T15:45:00+08:00">2023-08-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">操作系统</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2023/08/06/ucore%20%20Lab8%20%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" class="post-meta-item leancloud_visitors" data-flag-title="ucore lab8" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2023/08/06/ucore%20%20Lab8%20%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2023/08/06/ucore%20%20Lab8%20%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="ucore-Lab8-文件系统"><a href="#ucore-Lab8-文件系统" class="headerlink" title="ucore  Lab8 文件系统"></a>ucore  Lab8 文件系统</h1><h4 id="练习0：填写已有实验"><a href="#练习0：填写已有实验" class="headerlink" title="练习0：填写已有实验"></a>练习0：填写已有实验</h4><p>本实验依赖实验1/2/3/4/5/6/7。请把你做的实验1/2/3/4/5/6/7的代码填入本实验中代码中有“LAB1”/“LAB2”/“LAB3”/“LAB4”/“LAB5”/“LAB6” /“LAB7”的注释相应部分。并确保编译通过。注意：为了能够正确执行lab8的测试应用程序，可能需对已完成的实验1/2/3/4/5/6/7的代码进行进一步改进。</p>
+<p>不太需要改写什么</p>
+<h4 id="练习1-完成读文件操作的实现（需要编码）"><a href="#练习1-完成读文件操作的实现（需要编码）" class="headerlink" title="练习1: 完成读文件操作的实现（需要编码）"></a>练习1: 完成读文件操作的实现（需要编码）</h4><p>文件打开大致流程</p>
+<blockquote>
+<ol>
+<li>用户态应用程序：<ul>
+<li>用户态的应用程序通过系统调用（例如 <code>open</code> 系统调用）来请求内核打开文件。</li>
+</ul>
+</li>
+<li>系统调用接口层：<ul>
+<li>在系统调用接口层，例如 <code>sys_open</code> 函数，内核获取用户态应用程序传递的参数，例如文件路径名（<code>path</code>）和打开标志（<code>open_flags</code>）。</li>
+</ul>
+</li>
+<li>虚拟文件系统层（VFS）：<ul>
+<li>在 VFS 层，内核根据传递的文件路径名找到对应的文件系统（例如 SFS 文件系统）。</li>
+<li>VFS 层会调用具体文件系统的打开函数（例如 <code>sfs_open</code>）来进行文件的打开操作。</li>
+</ul>
+</li>
+<li>文件系统层（例如 SFS 文件系统）：<ul>
+<li>在文件系统层，打开函数（例如 <code>sfs_open</code>）会获取文件路径名对应的 inode，并创建 <code>struct file</code> 结构体，用于表示打开的文件。该结构体包含了与文件相关的信息，如文件的 inode、文件读写位置等。</li>
+<li>打开函数还可能进行权限检查，确保应用程序有权访问该文件。</li>
+</ul>
+</li>
+<li>返回文件描述符：<ul>
+<li>在 VFS 层，打开文件后会为该文件创建一个文件描述符，并返回给用户态应用程序。文件描述符是一个整数，用于标识文件的打开状态。</li>
+</ul>
+</li>
+<li>应用程序的文件操作：<ul>
+<li>用户态应用程序在获取到文件描述符后，可以使用该文件描述符进行文件读写等操作，通过系统调用（例如 <code>read</code>、<code>write</code>）来请求内核进行相应的操作。</li>
+</ul>
+</li>
+</ol>
+</blockquote>
+<p>下面给出读操作有关sfs_io_nolock函数的调用关系</p>
+<blockquote>
+<ol>
+<li>用户程序调用 <code>sys_read</code> 系统调用：<ul>
+<li>用户程序通过 <code>sys_read</code> 系统调用来请求读取文件内容。</li>
+</ul>
+</li>
+<li>系统调用处理：<ul>
+<li>内核根据系统调用号，将控制权转交给系统调用处理函数 <code>sys_read</code>。</li>
+</ul>
+</li>
+<li>文件描述符解析：<ul>
+<li><code>sys_read</code> 函数解析文件描述符，并找到对应的 <code>struct file</code> 结构体。</li>
+</ul>
+</li>
+<li>文件读取调用：<ul>
+<li><code>sys_read</code> 函数调用文件读取函数 <code>file_read</code>。</li>
+<li><code>file_read</code> 函数首先检查文件读取权限，并调用文件系统抽象层函数 <code>vfs_read</code>。</li>
+</ul>
+</li>
+<li>虚拟文件系统抽象层（VFS）：<ul>
+<li><code>vfs_read</code> 函数根据文件描述符，调用 VFS 层的文件读取函数 <code>vop_read</code>。</li>
+<li><code>vop_read</code> 函数根据文件节点（<code>struct vnode</code>）类型，调用不同文件系统的文件读取函数，如 <code>sfs_read</code>（用于 SFS 文件系统）。</li>
+</ul>
+</li>
+<li>SFS 文件系统读取：<ul>
+<li><code>sfs_read</code> 函数根据文件节点中的文件读写偏移量（文件指针），找到相应的磁盘块，并调用 <code>sfs_io_nolock</code> 函数读取磁盘块的数据。</li>
+</ul>
+</li>
+<li><code>sfs_io_nolock</code>：<ul>
+<li><code>sfs_io_nolock</code> 函数负责实际的读取磁盘块操作。</li>
+<li>它调用 <code>sfs_read_block</code> 函数从磁盘中读取指定的数据块。</li>
+</ul>
+</li>
+<li>磁盘读取：<ul>
+<li><code>sfs_read_block</code> 函数利用设备驱动层的接口函数，将磁盘块数据从硬盘读取到内存缓冲区。</li>
+</ul>
+</li>
+<li>数据传递：<ul>
+<li><code>sfs_read_block</code> 函数将读取的数据传递给上层的 <code>sfs_read</code> 函数。</li>
+</ul>
+</li>
+<li>数据传递至文件读取函数：<ul>
+<li><code>sfs_read</code> 函数将读取的数据传递给 <code>vop_read</code> 函数。</li>
+</ul>
+</li>
+<li>数据传递至系统调用函数：<ul>
+<li><code>vop_read</code> 函数将读取的数据传递给 <code>vfs_read</code> 函数。</li>
+</ul>
+</li>
+<li>数据传递至系统调用处理函数：<ul>
+<li><code>vfs_read</code> 函数将读取的数据传递给 <code>sys_read</code> 函数。</li>
+</ul>
+</li>
+<li>返回用户空间：<ul>
+<li><code>sys_read</code> 函数将读取的数据传递回用户程序空间，并返回读取的字节数。</li>
+</ul>
+</li>
+</ol>
+</blockquote>
+<p>sfs_io_nolock 实现</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span></span><br><span class="line"><span class="title function_">sfs_io_nolock</span><span class="params">(<span class="keyword">struct</span> sfs_fs *sfs, <span class="keyword">struct</span> sfs_inode *<span class="built_in">sin</span>, <span class="type">void</span> *buf, <span class="type">off_t</span> offset, <span class="type">size_t</span> *alenp, <span class="type">bool</span> write)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">bool</span> aligned =  <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> ((blkoff = offset % SFS_BLKSIZE) != <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        aligned = <span class="number">1</span>;</span><br><span class="line">        size = (nblks != <span class="number">0</span>) ? (SFS_BLKSIZE - blkoff) : (endpos - offset);</span><br><span class="line">        <span class="keyword">if</span> ((ret = sfs_bmap_load_nolock(sfs, <span class="built_in">sin</span>, blkno, &amp;ino)) != <span class="number">0</span>)&#123;</span><br><span class="line">            <span class="keyword">goto</span> out;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> ((ret = sfs_buf_op(sfs, buf, size, ino, blkoff)) != <span class="number">0</span>)&#123;</span><br><span class="line">            <span class="keyword">goto</span> out;</span><br><span class="line">        &#125;</span><br><span class="line">        alen += size;   buf += size;</span><br><span class="line">        <span class="keyword">if</span> (nblks == <span class="number">0</span>)   <span class="keyword">goto</span> out;  </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(nblks - aligned &gt; <span class="number">0</span>)&#123;</span><br><span class="line">        <span class="keyword">if</span> ((ret = sfs_bmap_load_nolock(sfs, <span class="built_in">sin</span>, blkno + aligned, &amp;ino)) != <span class="number">0</span>)&#123;</span><br><span class="line">            <span class="keyword">goto</span> out;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> ((ret = sfs_block_op(sfs, buf,  ino, nblks - aligned)) != <span class="number">0</span>)&#123;</span><br><span class="line">            <span class="keyword">goto</span> out;</span><br><span class="line">        &#125;</span><br><span class="line">        buf += (nblks - aligned) * SFS_BLKSIZE;</span><br><span class="line">        alen += (nblks - aligned) * SFS_BLKSIZE;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ((size = endpos % SFS_BLKSIZE) != <span class="number">0</span> )&#123;</span><br><span class="line">        <span class="keyword">if</span> ((ret = sfs_bmap_load_nolock(sfs, <span class="built_in">sin</span>, blkno + nblks, &amp;ino)) != <span class="number">0</span>)&#123;</span><br><span class="line">            <span class="keyword">goto</span> out;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> ((ret = sfs_buf_op(sfs, buf, size, ino, <span class="number">0</span>)) != <span class="number">0</span>)&#123;</span><br><span class="line">            <span class="keyword">goto</span> out;</span><br><span class="line">        &#125;</span><br><span class="line">        alen += size;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>首先获取文件的 <code>struct sfs_disk_inode</code> 结构体指针 <code>din</code>，并对文件进行合法性检查，如文件类型不为目录等。</li>
+<li>计算文件读写的结束位置 <code>endpos</code>，并进行参数合法性检查，确保读写操作在有效的范围内。</li>
+<li>根据读写类型（<code>write</code>），选择对应的缓冲区操作函数 <code>sfs_buf_op</code> 和块操作函数 <code>sfs_block_op</code>，分别对应于读操作和写操作。</li>
+<li>接下来，根据文件读写的开始位置 <code>offset</code> 和结束位置 <code>endpos</code>，按块为单位进行读写操作。</li>
+<li>首先，处理未对齐的部分，即当前块的偏移不为0的情况。如果当前偏移不为0，则先读写当前块剩余的数据。</li>
+<li>然后，处理对齐的整块数据，根据起始块号和需要读写的块数，调用相应的函数读写整块数据。</li>
+<li>最后，处理结束位置不为块末尾的情况，即剩余部分不足一块的数据，再次调用相应函数读写剩余的数据。</li>
+<li>在整个过程中，根据读写的大小，更新已读写数据的长度 <code>alen</code>。</li>
+<li>如果读写操作结束后，文件大小发生变化，则更新文件大小，并标记文件节点为脏（<code>dirty</code>）。</li>
+<li>最后，返回读写操作的结果。如果操作成功，返回0，否则返回错误码。</li>
+</ol>
+<h4 id="练习2-完成基于文件系统的执行程序机制的实现（需要编码）"><a href="#练习2-完成基于文件系统的执行程序机制的实现（需要编码）" class="headerlink" title="练习2: 完成基于文件系统的执行程序机制的实现（需要编码）"></a>练习2: 完成基于文件系统的执行程序机制的实现（需要编码）</h4><p>这个写起来真的好多好难啊，代码还是不放了，答案也有（鄙人不会，只能抄答案），下面给出一些该函数实现流程吧</p>
+<blockquote>
+<ol>
+<li>首先，检查当前进程的 <code>mm</code> 是否为空。<code>mm</code> 是进程的内存管理结构，用于管理进程的虚拟地址空间。如果当前进程的 <code>mm</code> 不为空，说明内存管理结构已经被占用，这意味着当前进程已经运行了其他程序或者已经加载了其他程序，因此抛出 panic，表示异常情况。</li>
+<li>创建新的 <code>mm</code> 结构，用于存放当前进程的虚拟地址空间。首先，调用 <code>mm_create()</code> 函数创建一个新的 <code>mm</code> 结构，并将返回的指针存储在 <code>mm</code> 变量中。</li>
+<li>为新的 <code>mm</code> 结构设置页目录表（PDT），通过 <code>setup_pgdir()</code> 函数进行页表项的设置。该函数的目的是为了为用户程序提供一个独立的虚拟地址空间，并将用户程序的代码、数据和栈等内容映射到不同的物理页上。</li>
+<li>解析 ELF 可执行文件头部，读取 ELF 文件的信息，并进行合法性检查。首先，定义一个 <code>elf</code> 结构体和一个指向该结构体的指针 <code>elfp</code>，用于存储 ELF 文件的头部信息。然后，通过 <code>load_icode_read()</code> 函数从磁盘上读取 ELF 可执行文件的头部信息到 <code>elfp</code> 中。接着，检查 ELF 文件的魔数是否正确，如果不正确则说明该 ELF 文件不合法，抛出 <code>-E_INVAL_ELF</code> 错误。</li>
+<li>遍历 ELF 可执行文件的 program header 表，对 TEXT/DATA/BSS 段进行处理。首先，定义一个 <code>ph</code> 结构体和一个指向该结构体的指针 <code>php</code>，用于存储 program header 表项的信息。然后，通过循环遍历 ELF 文件的每一个 program header 表项。</li>
+<li>对 TEXT/DATA 段进行分配虚拟地址空间和读取操作。对于每一个 program header 表项，首先检查其类型是否为 <code>ELF_PT_LOAD</code>，表示该段是可加载的段。然后，检查 <code>p_filesz</code> 是否大于 <code>p_memsz</code>，如果是则说明 ELF 文件不合法，抛出 <code>-E_INVAL_ELF</code> 错误。接着，判断 <code>p_filesz</code> 是否为 0，如果为 0 则说明该段没有数据需要读取，直接跳过。如果以上条件都不满足，说明该段需要加载到用户空间。</li>
+<li>为 TEXT/DATA 段在用户空间分配虚拟地址空间，并将对应的数据从 ELF 文件中读取到用户空间。首先，根据 program header 表项中的虚拟地址 <code>p_va</code> 和大小 <code>p_memsz</code> 以及权限信息 <code>p_flags</code>，调用 <code>mm_map()</code> 函数将该段映射到用户空间的合适位置。接着，计算出每一页的偏移和大小，并逐页分配物理内存，并将数据从 ELF 文件中读取到相应的物理页中。</li>
+<li>对 BSS 段进行分配虚拟地址空间和清零操作。对于每一个 program header 表项，同样检查其类型是否为 <code>ELF_PT_LOAD</code>，表示该段是可加载的段。然后，判断 <code>p_memsz</code> 是否大于 <code>p_filesz</code>，如果大于，则说明 BSS 段需要进行清零初始化。接着，为 BSS 段在用户空间分配虚拟地址空间，并将对应的内存空间清零。</li>
+<li>为用户栈设置虚拟地址空间，并将命令行参数和用户栈的布局写入用户空间。首先，定义一些变量来辅助设置用户栈。然后，根据命令行参数计算出所需的栈空间大小，并调用 <code>mm_map()</code> 函数将用户栈映射到用户空间的合适位置。接着，根据命令行参数的长度和个数，将参数写入用户栈中。</li>
+<li>切换当前进程的页目录表到新创建的用户页目录表，完成从内核空间到用户空间的切换。首先，增加新创建的 <code>mm</code> 结构的引用计数，然后将当前进程的 <code>mm</code> 指针指向新创建的 <code>mm</code> 结构，将当前进程的 CR3 寄存器设置为新的页目录表的物理地址，最后通过 <code>lcr3</code> 指令切换到用户态的页目录表。</li>
+<li>最后，设置用户程序的执行环境。首先，设置中断帧 <code>tf</code>，包括代码段和数据段选择子、栈指针 <code>esp</code>、用户程序的入口地址 <code>eip</code>，以及标志寄存器 <code>eflags</code>。然后，返回 0，表示加载用户程序成功。</li>
+</ol>
+<p>如果在加载过程中发生错误，会进行相应的清理工作，并返回相应的错误码。这样，<code>load_icode</code> 函数负责将 ELF 可执行文件加载到用户空间中，设置用户程序执行的环境，并切换到用户态，使用户程序开始执行。</p>
+</blockquote>
+<p>顺便解释一下主要elf格式信息</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">ELF头部（ELF Header）：位于文件的开头，用于描述整个ELF文件的结构和属性。包含了与ELF文件有关的一些基本信息，如文件的类型（可执行文件、共享库或目标文件）、目标硬件平台、入口点地址等。</span><br><span class="line"></span><br><span class="line">程序头表（Program Header Table）：位于ELF头部指定的偏移位置，用于描述可执行程序或共享库中各个程序段（Program Segment）的属性和位置。每个程序段描述了一个逻辑上连续的内存区域，包含了一段代码或数据。程序头表在目标文件中可以不存在，但在可执行文件和共享库中通常存在。</span><br><span class="line"></span><br><span class="line">节头表（Section Header Table）：位于ELF头部指定的偏移位置，用于描述目标文件中各个节（Section）的属性和位置。节是ELF文件的组成单位，包含了一些编译器产生的信息，如代码、数据、符号表等。</span><br><span class="line"></span><br><span class="line">符号表（Symbol Table）：位于一个特定的节中，用于描述目标文件中定义和引用的符号（变量、函数等）的信息。符号表提供了在程序中查找和链接符号的功能。</span><br><span class="line"></span><br><span class="line">字符串表（String Table）：位于一个特定的节中，用于存储目标文件中使用的字符串，如符号表中的符号名称、节的名称等。通过字符串表，可以根据字符串的偏移值找到相应的字符串。</span><br><span class="line"></span><br><span class="line">代码段和数据段：ELF文件中的代码段（Code Segment）和数据段（Data Segment）存储了程序的指令和数据。在可执行文件中，代码段包含了程序的机器指令，数据段包含了程序使用的全局变量和常量等数据。</span><br><span class="line"></span><br><span class="line">BSS段：位于数据段之后，用于存储未初始化的全局变量和静态变量。BSS段在ELF文件中并不占据实际的存储空间，而是在程序加载到内存时由系统初始化为零</span><br></pre></td></tr></table></figure>
+
+<p>唔，至此，本人对操作系统的方方面面有了大致的框架，也了解到许多底层知识，中断描述符呀，虚拟内存，同步互斥等等，对自己提升真的好多。ucore结束了，但是操作系统还没结束</p>
+<p>说实话，本人水平有限，对于ucore很多地方确实还是不太理解，没有很好掌握操作系统的内部机理，只是大致有了一个整体框架，框架内部的细节还是没有填满，最近由于处理事情较多，过段时间写CSAPP的时候，再接再厉，希望到时候我的基础会扎实一些</p>
+<p><strong>祝贺你通过自己的努力，完成了ucore OS lab1-lab8!</strong></p>
+<p>这段话还是恭喜你们吧，哈哈</p>
+
+    </div>
+
+    
+    
+    
+
+      
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+      
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ucore/" rel="tag"># ucore</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/08/06/ucore%20Lab5%20%E7%94%A8%E6%88%B7%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/" rel="prev" title="ucore lab5">
+      <i class="fa fa-chevron-left"></i> ucore lab5
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ucore-Lab8-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number">1.</span> <span class="nav-text">ucore  Lab8 文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%83%E4%B9%A00%EF%BC%9A%E5%A1%AB%E5%86%99%E5%B7%B2%E6%9C%89%E5%AE%9E%E9%AA%8C"><span class="nav-number">1.0.0.1.</span> <span class="nav-text">练习0：填写已有实验</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%83%E4%B9%A01-%E5%AE%8C%E6%88%90%E8%AF%BB%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C%E7%9A%84%E5%AE%9E%E7%8E%B0%EF%BC%88%E9%9C%80%E8%A6%81%E7%BC%96%E7%A0%81%EF%BC%89"><span class="nav-number">1.0.0.2.</span> <span class="nav-text">练习1: 完成读文件操作的实现（需要编码）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%83%E4%B9%A02-%E5%AE%8C%E6%88%90%E5%9F%BA%E4%BA%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%89%A7%E8%A1%8C%E7%A8%8B%E5%BA%8F%E6%9C%BA%E5%88%B6%E7%9A%84%E5%AE%9E%E7%8E%B0%EF%BC%88%E9%9C%80%E8%A6%81%E7%BC%96%E7%A0%81%EF%BC%89"><span class="nav-number">1.0.0.3.</span> <span class="nav-text">练习2: 完成基于文件系统的执行程序机制的实现（需要编码）</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="dying"
+      src="/images/head.jpg">
+  <p class="site-author-name" itemprop="name">dying</p>
+  <div class="site-description" itemprop="description">想都是问题，做才是答案</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/QYZing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;QYZing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:2062656460@qq.com" title="E-Mail → mailto:2062656460@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">蒙ICP备2023000237号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dying</span>
+</div>
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/canvas_sphere.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'wFD2TJDXerlwQLJQOksbriCK-gzGzoHsz',
+      appKey     : 'ErOISFE8uucXKBtDq5EVrhh4',
+      placeholder: "输入你的评论",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '3' || 10,
+      visitor    : true,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : true,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

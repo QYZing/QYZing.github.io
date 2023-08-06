@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/earth.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/earth.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.dying.asia","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="ucore lab2 物理内存管理练习1：实现 first-fit 连续物理内存分配算法（需要编程）default_init(void)1初始化一个链表  default_init_memmap(struct Page *base, size_t n)就是将空闲内存挂在空闲链表上，我看答案是一个一个都挂上去了，然后将开头设置包含后面的信息，而我是直接一把他们变成一整块挂在链表上 123456789">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ucore lab2">
+<meta property="og:url" content="https://www.dying.asia/2023/08/06/ucore%20lab2%20%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/index.html">
+<meta property="og:site_name" content="dying Blog">
+<meta property="og:description" content="ucore lab2 物理内存管理练习1：实现 first-fit 连续物理内存分配算法（需要编程）default_init(void)1初始化一个链表  default_init_memmap(struct Page *base, size_t n)就是将空闲内存挂在空闲链表上，我看答案是一个一个都挂上去了，然后将开头设置包含后面的信息，而我是直接一把他们变成一整块挂在链表上 123456789">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-08-06T07:44:00.000Z">
+<meta property="article:modified_time" content="2023-08-06T07:44:55.233Z">
+<meta property="article:author" content="dying">
+<meta property="article:tag" content="ucore">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://www.dying.asia/2023/08/06/ucore%20lab2%20%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>ucore lab2 | dying Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">dying Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>资源</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-guestbook">
+
+    <a href="/guestbook/" rel="section"><i class="fa fa-book fa-fw"></i>留言</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://www.dying.asia/2023/08/06/ucore%20lab2%20%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/head.jpg">
+      <meta itemprop="name" content="dying">
+      <meta itemprop="description" content="想都是问题，做才是答案">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="dying Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ucore lab2
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-08-06 15:44:00 / 修改时间：15:44:55" itemprop="dateCreated datePublished" datetime="2023-08-06T15:44:00+08:00">2023-08-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/" itemprop="url" rel="index"><span itemprop="name">操作系统</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2023/08/06/ucore%20lab2%20%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" class="post-meta-item leancloud_visitors" data-flag-title="ucore lab2" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2023/08/06/ucore%20lab2%20%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2023/08/06/ucore%20lab2%20%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="ucore-lab2-物理内存管理"><a href="#ucore-lab2-物理内存管理" class="headerlink" title="ucore lab2 物理内存管理"></a>ucore lab2 物理内存管理</h1><h4 id="练习1：实现-first-fit-连续物理内存分配算法（需要编程）"><a href="#练习1：实现-first-fit-连续物理内存分配算法（需要编程）" class="headerlink" title="练习1：实现 first-fit 连续物理内存分配算法（需要编程）"></a><strong>练习1：实现 first-fit 连续物理内存分配算法（需要编程）</strong></h4><h6 id="default-init-void"><a href="#default-init-void" class="headerlink" title="default_init(void)"></a>default_init(void)</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">初始化一个链表</span><br></pre></td></tr></table></figure>
+
+<h6 id="default-init-memmap-struct-Page-base-size-t-n"><a href="#default-init-memmap-struct-Page-base-size-t-n" class="headerlink" title="default_init_memmap(struct Page *base, size_t n)"></a>default_init_memmap(struct Page *base, size_t n)</h6><p>就是将空闲内存挂在空闲链表上，我看答案是一个一个都挂上去了，然后将开头设置包含后面的信息，而我是直接一把他们变成一整块挂在链表上</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span></span><br><span class="line"><span class="title function_">default_init_memmap</span><span class="params">(<span class="keyword">struct</span> Page *base, <span class="type">size_t</span> n)</span></span><br><span class="line">&#123;</span><br><span class="line">    assert(n &gt; <span class="number">0</span>);</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Page</span> *<span class="title">p</span> =</span> base;</span><br><span class="line">    <span class="keyword">for</span> (; p != base + n; p++)</span><br><span class="line">    &#123;</span><br><span class="line">        assert(PageReserved(p));</span><br><span class="line">        p-&gt;flags = PG_property;</span><br><span class="line">        p-&gt;property = <span class="number">0</span>;</span><br><span class="line">        set_page_ref(p, <span class="number">0</span>);</span><br><span class="line">        SetPageProperty(p);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    list_add_before(&amp;free_list, &amp;(base-&gt;page_link));</span><br><span class="line">    base-&gt;property = n;</span><br><span class="line"></span><br><span class="line">    nr_free += n;</span><br><span class="line">    <span class="comment">// list_add(&amp;free_list, &amp;(base-&gt;page_link));</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="default-alloc-pages-size-t-n"><a href="#default-alloc-pages-size-t-n" class="headerlink" title="default_alloc_pages(size_t n)"></a>default_alloc_pages(size_t n)</h6><p>分配内存的时候，遍历空闲链表，遇到第一个可以用的就取下来，如果还比较大就切一下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="keyword">struct</span> Page *</span><br><span class="line"><span class="title function_">default_alloc_pages</span><span class="params">(<span class="type">size_t</span> n)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="meta">#<span class="keyword">ifdef</span> $DEBUG</span></span><br><span class="line">            cprintf(<span class="string">&quot;\n!!!!!!!!!!!memory alloc :!!!!!!!!!!!!!!!!!\n&quot;</span>);</span><br><span class="line">    <span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">    assert(n &gt; <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (n &gt; nr_free)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Page</span> *<span class="title">page</span> =</span> <span class="literal">NULL</span>;</span><br><span class="line">    <span class="type">list_entry_t</span> *le = &amp;free_list;</span><br><span class="line">    <span class="keyword">while</span> ((le = list_next(le)) != &amp;free_list)<span class="comment">//遍历找到合适内存块</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">Page</span> *<span class="title">p</span> =</span> le2page(le, page_link);</span><br><span class="line">        <span class="keyword">if</span> (p-&gt;property &gt;= n)</span><br><span class="line">        &#123;</span><br><span class="line">            page = p;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (page != <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        SetPageReserved(page);</span><br><span class="line">        ClearPageProperty(page);</span><br><span class="line"> </span><br><span class="line">        <span class="keyword">if</span> (page-&gt;property &gt; n)<span class="comment">//比较大时先切下来放到空闲列表上然后在删，不然找不到位置了就</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="class"><span class="keyword">struct</span> <span class="title">Page</span> *<span class="title">p</span> =</span> page + n;</span><br><span class="line">            p-&gt;property = page-&gt;property - n;</span><br><span class="line">            list_add(&amp;page-&gt;page_link, &amp;(p-&gt;page_link));</span><br><span class="line">        &#125;</span><br><span class="line">        list_del(&amp;(page-&gt;page_link));</span><br><span class="line">        nr_free -= n;</span><br><span class="line">        ClearPageProperty(page);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">#<span class="keyword">ifdef</span> DEBUG </span></span><br><span class="line">        le = &amp;free_list;</span><br><span class="line">        <span class="keyword">while</span>((le = list_next(le)) != &amp;free_list)</span><br><span class="line">        &#123;</span><br><span class="line">            page = le2page(le , page_link);</span><br><span class="line">            cprintf(<span class="string">&quot;memory page address = %p ,property  = %ld\n&quot;</span> , page , page-&gt;property);</span><br><span class="line">        &#125;</span><br><span class="line">    <span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">    <span class="keyword">return</span> page;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="default-free-pages-struct-Page-base-size-t-n"><a href="#default-free-pages-struct-Page-base-size-t-n" class="headerlink" title="default_free_pages(struct Page *base, size_t n)"></a>default_free_pages(struct Page *base, size_t n)</h6><p>释放时，也是先找位置，我是直接找到该位置后面的一个位置，然后循环向前看能否合并，不能合并break就行</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">list_entry_t</span> *le = &amp;free_list;</span><br><span class="line">   <span class="keyword">do</span>&#123;<span class="comment">//找位置</span></span><br><span class="line">       le = list_next(le);</span><br><span class="line">       <span class="meta">#<span class="keyword">ifdef</span> $DEBUG</span></span><br><span class="line">           cprintf(<span class="string">&quot;...loop location base-&gt;link = %p le = %p \n&quot;</span>, &amp;base-&gt;page_link, le);</span><br><span class="line">       <span class="meta">#<span class="keyword">endif</span> </span></span><br><span class="line">   &#125; <span class="keyword">while</span> (&amp;base-&gt;page_link &gt; le &amp;&amp; le != &amp;free_list);<span class="comment">// search location</span></span><br><span class="line"></span><br><span class="line">   p = le2page(le, page_link);</span><br><span class="line">   le = list_prev(le);</span><br><span class="line">   <span class="keyword">if</span> (base + base-&gt;property == p)<span class="comment">//看一下后面的能否合并</span></span><br><span class="line">   &#123;</span><br><span class="line">       base-&gt;property += p-&gt;property;</span><br><span class="line">       ClearPageProperty(p);</span><br><span class="line">       list_del(&amp;(p-&gt;page_link));</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">while</span> (le != &amp;free_list)<span class="comment">//看一下前面的能否合并</span></span><br><span class="line">   &#123;</span><br><span class="line">       p = le2page(le, page_link);</span><br><span class="line">       <span class="keyword">if</span> (p + p-&gt;property == base)</span><br><span class="line">       &#123;</span><br><span class="line">           p-&gt;property += base-&gt;property;</span><br><span class="line">           ClearPageProperty(base);</span><br><span class="line">           base = p;</span><br><span class="line">           list_del(&amp;(p-&gt;page_link));</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">else</span></span><br><span class="line">       &#123;</span><br><span class="line">           <span class="keyword">break</span>;</span><br><span class="line">       &#125;</span><br><span class="line">       le = list_prev(le);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>总结：大致上就是链表的基本操作，不过要注意，分配释放时的标志信息要改写，感觉我的不太对在某些时候，有时候遍历输出的时候遍历链表就死循环了，但是看起来分配和回收时不影响，有些神奇</p>
+<h4 id="练习2：实现寻找虚拟地址对应的页表项（需要编程）"><a href="#练习2：实现寻找虚拟地址对应的页表项（需要编程）" class="headerlink" title="练习2：实现寻找虚拟地址对应的页表项（需要编程）"></a><strong>练习2：实现寻找虚拟地址对应的页表项（需要编程）</strong></h4><h6 id="get-pte-pde-t-pgdir-uintptr-t-la-bool-create"><a href="#get-pte-pde-t-pgdir-uintptr-t-la-bool-create" class="headerlink" title="get_pte(pde_t *pgdir, uintptr_t la, bool create)"></a>get_pte(pde_t *pgdir, uintptr_t la, bool create)</h6><p>参数定义：pgdir页目录起始地址 ， la是线性地址 ，create是否创造</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// get_pte - get pte and return the kernel virtual address of this pte for la</span></span><br><span class="line"><span class="comment">//         - if the PT contains this pte didn&#x27;t exist, alloc a page for PT</span></span><br><span class="line"><span class="comment">//  parameter:</span></span><br><span class="line"><span class="comment">//   pgdir:  the kernel virtual base address of PDT</span></span><br><span class="line"><span class="comment">//   la:     the linear address need to map</span></span><br><span class="line"><span class="comment">//   create: a logical value to decide if alloc a page for PT</span></span><br><span class="line"><span class="comment">//  return vaule: the kernel virtual address of this pte</span></span><br></pre></td></tr></table></figure>
+
+<p>首先要获取页目录对应的表项配合la的偏移计算 </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">pde_t</span> *pdep = &amp;pgdir[PDX(la)]; <span class="comment">// (1) find page directory entry</span></span><br></pre></td></tr></table></figure>
+
+<p>然后显看是否存在，存在就直接返回对应配合la计算出来的页表项</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> &amp;((<span class="type">pte_t</span> *)KADDR(PDE_ADDR(*pdep)))[PTX(la)]; <span class="comment">// (8) return page table entry</span></span><br></pre></td></tr></table></figure>
+
+<p>不存在则要看需不需要创造</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!(*pdep &amp; PTE_P))          <span class="comment">// (2) check if entry is not present</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Page</span> *<span class="title">page</span>;</span></span><br><span class="line">    <span class="keyword">if</span> (!create || (page = alloc_page()) == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;                <span class="comment">// (3) check if creating is needed, then alloc page for page table</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>; <span class="comment">// CAUTION: this page is used for page table, not for common data page</span></span><br><span class="line">    &#125;</span><br><span class="line">    set_page_ref(page, <span class="number">1</span>);              <span class="comment">// (4) set page reference</span></span><br><span class="line">    <span class="type">uintptr_t</span> pa = page2pa(page);       <span class="comment">// (5) get linear address of page</span></span><br><span class="line">    <span class="built_in">memset</span>(KADDR(pa), <span class="number">0</span>, PGSIZE);       <span class="comment">// (6) clear page content using memset</span></span><br><span class="line">    *pdep = pa | PTE_P | PTE_W | PTE_U; <span class="comment">// (7) set page directory entry&#x27;s permission</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个地址就很晕哎</p>
+<h4 id="练习3：释放某虚地址所在的页并取消对应二级页表项的映射（需要编程）"><a href="#练习3：释放某虚地址所在的页并取消对应二级页表项的映射（需要编程）" class="headerlink" title="练习3：释放某虚地址所在的页并取消对应二级页表项的映射（需要编程）"></a><strong>练习3：释放某虚地址所在的页并取消对应二级页表项的映射（需要编程）</strong></h4><h6 id="page-remove-pte-pde-t-pgdir-uintptr-t-la-pte-t-ptep"><a href="#page-remove-pte-pde-t-pgdir-uintptr-t-la-pte-t-ptep" class="headerlink" title="page_remove_pte(pde_t *pgdir, uintptr_t la, pte_t *ptep)"></a>page_remove_pte(pde_t *pgdir, uintptr_t la, pte_t *ptep)</h6><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (*ptep &amp; PTE_P)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Page</span> *<span class="title">page</span> =</span> pte2page(*ptep); <span class="comment">//(2) find corresponding page to pte</span></span><br><span class="line">    <span class="keyword">if</span> (page_ref_dec(page) == <span class="number">0</span>)    <span class="comment">//(3) decrease page reference</span></span><br><span class="line">    &#123;                             </span><br><span class="line">        free_page(page); <span class="comment">//(4) and free this page when page reference reachs 0</span></span><br><span class="line">    &#125;</span><br><span class="line">    *ptep = <span class="number">0</span>; <span class="comment">//(5) clear second page table entry</span></span><br><span class="line"></span><br><span class="line">    tlb_invalidate(pgdir, la); <span class="comment">//(6) flush tlb</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注释太全了，直接写了就行</p>
+<p>注：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* *</span></span><br><span class="line"><span class="comment"> * Virtual memory map:                                          Permissions</span></span><br><span class="line"><span class="comment"> *                                                              kernel/user</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> *     4G ------------------&gt; +---------------------------------+</span></span><br><span class="line"><span class="comment"> *                            |                                 |</span></span><br><span class="line"><span class="comment"> *                            |         Empty Memory (*)        |</span></span><br><span class="line"><span class="comment"> *                            |                                 |</span></span><br><span class="line"><span class="comment"> *                            +---------------------------------+ 0xFB000000</span></span><br><span class="line"><span class="comment"> *                            |   Cur. Page Table (Kern, RW)    | RW/-- PTSIZE</span></span><br><span class="line"><span class="comment"> *     VPT -----------------&gt; +---------------------------------+ 0xFAC00000</span></span><br><span class="line"><span class="comment"> *                            |        Invalid Memory (*)       | --/--</span></span><br><span class="line"><span class="comment"> *     KERNTOP -------------&gt; +---------------------------------+ 0xF8000000</span></span><br><span class="line"><span class="comment"> *                            |                                 |</span></span><br><span class="line"><span class="comment"> *                            |    Remapped Physical Memory     | RW/-- KMEMSIZE</span></span><br><span class="line"><span class="comment"> *                            |                                 |</span></span><br><span class="line"><span class="comment"> *     KERNBASE ------------&gt; +---------------------------------+ 0xC0000000</span></span><br><span class="line"><span class="comment"> *                            |                                 |</span></span><br><span class="line"><span class="comment"> *                            |                                 |</span></span><br><span class="line"><span class="comment"> *                            |                                 |</span></span><br><span class="line"><span class="comment"> *                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span></span><br><span class="line"><span class="comment"> * (*) Note: The kernel ensures that &quot;Invalid Memory&quot; is *never* mapped.</span></span><br><span class="line"><span class="comment"> *     &quot;Empty Memory&quot; is normally unmapped, but user programs may map pages</span></span><br><span class="line"><span class="comment"> *     there if desired.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * */</span></span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      
+      <div>
+        <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+      </div>
+      
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ucore/" rel="tag"># ucore</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/06/13/Buffer%20Pool%EF%BC%88cmu15445%20project1%EF%BC%89/" rel="prev" title="Buffer Pool (cmu15445 project1)">
+      <i class="fa fa-chevron-left"></i> Buffer Pool (cmu15445 project1)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/08/06/ucore%20lab1/" rel="next" title="ucore lab1">
+      ucore lab1 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ucore-lab2-%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">ucore lab2 物理内存管理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%83%E4%B9%A01%EF%BC%9A%E5%AE%9E%E7%8E%B0-first-fit-%E8%BF%9E%E7%BB%AD%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E7%AE%97%E6%B3%95%EF%BC%88%E9%9C%80%E8%A6%81%E7%BC%96%E7%A8%8B%EF%BC%89"><span class="nav-number">1.0.0.1.</span> <span class="nav-text">练习1：实现 first-fit 连续物理内存分配算法（需要编程）</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#default-init-void"><span class="nav-number">1.0.0.1.0.1.</span> <span class="nav-text">default_init(void)</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#default-init-memmap-struct-Page-base-size-t-n"><span class="nav-number">1.0.0.1.0.2.</span> <span class="nav-text">default_init_memmap(struct Page *base, size_t n)</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#default-alloc-pages-size-t-n"><span class="nav-number">1.0.0.1.0.3.</span> <span class="nav-text">default_alloc_pages(size_t n)</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#default-free-pages-struct-Page-base-size-t-n"><span class="nav-number">1.0.0.1.0.4.</span> <span class="nav-text">default_free_pages(struct Page *base, size_t n)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%83%E4%B9%A02%EF%BC%9A%E5%AE%9E%E7%8E%B0%E5%AF%BB%E6%89%BE%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80%E5%AF%B9%E5%BA%94%E7%9A%84%E9%A1%B5%E8%A1%A8%E9%A1%B9%EF%BC%88%E9%9C%80%E8%A6%81%E7%BC%96%E7%A8%8B%EF%BC%89"><span class="nav-number">1.0.0.2.</span> <span class="nav-text">练习2：实现寻找虚拟地址对应的页表项（需要编程）</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#get-pte-pde-t-pgdir-uintptr-t-la-bool-create"><span class="nav-number">1.0.0.2.0.1.</span> <span class="nav-text">get_pte(pde_t *pgdir, uintptr_t la, bool create)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%83%E4%B9%A03%EF%BC%9A%E9%87%8A%E6%94%BE%E6%9F%90%E8%99%9A%E5%9C%B0%E5%9D%80%E6%89%80%E5%9C%A8%E7%9A%84%E9%A1%B5%E5%B9%B6%E5%8F%96%E6%B6%88%E5%AF%B9%E5%BA%94%E4%BA%8C%E7%BA%A7%E9%A1%B5%E8%A1%A8%E9%A1%B9%E7%9A%84%E6%98%A0%E5%B0%84%EF%BC%88%E9%9C%80%E8%A6%81%E7%BC%96%E7%A8%8B%EF%BC%89"><span class="nav-number">1.0.0.3.</span> <span class="nav-text">练习3：释放某虚地址所在的页并取消对应二级页表项的映射（需要编程）</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#page-remove-pte-pde-t-pgdir-uintptr-t-la-pte-t-ptep"><span class="nav-number">1.0.0.3.0.1.</span> <span class="nav-text">page_remove_pte(pde_t *pgdir, uintptr_t la, pte_t *ptep)</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="dying"
+      src="/images/head.jpg">
+  <p class="site-author-name" itemprop="name">dying</p>
+  <div class="site-description" itemprop="description">想都是问题，做才是答案</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">16</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/QYZing" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;QYZing" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:2062656460@qq.com" title="E-Mail → mailto:2062656460@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">蒙ICP备2023000237号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dying</span>
+</div>
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/canvas_sphere.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'wFD2TJDXerlwQLJQOksbriCK-gzGzoHsz',
+      appKey     : 'ErOISFE8uucXKBtDq5EVrhh4',
+      placeholder: "输入你的评论",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '3' || 10,
+      visitor    : true,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : true,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
